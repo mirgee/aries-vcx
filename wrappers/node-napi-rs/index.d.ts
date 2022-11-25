@@ -20,3 +20,30 @@ export function outOfBandSenderDeserialize(oobData: string): number
 export function outOfBandReceiverDeserialize(oobData: string): number
 export function outOfBandSenderRelease(handle: number): void
 export function outOfBandReceiverRelease(handle: number): void
+export function mediatedConnectionGeneratePublicInvite(publicDid: string, label: string): string
+export function mediatedConnectionGetPwDid(handle: number): string
+export function mediatedConnectionGetTheirPwDid(handle: number): string
+export function mediatedConnectionGetThreadId(handle: number): string
+export function mediatedConnectionGetState(handle: number): number
+export function mediatedConnectionGetSourceId(handle: number): string
+export function mediatedConnectionCreate(sourceId: string): Promise<number>
+export function mediatedConnectionCreateWithInvite(sourceId: string, details: string): Promise<number>
+export function mediatedConnectionCreateWithConnectionRequest(request: string, agentHandle: number): Promise<number>
+export function mediatedConnectionCreateWithConnectionRequestV2(request: string, pwInfo: string): Promise<number>
+export function mediatedConnectionSendMessage(handle: number, msg: string): Promise<void>
+export function mediatedConnectionSendHandshakeReuse(handle: number, oobMsg: string): Promise<void>
+export function mediatedConnectionUpdateStateWithMessage(handle: number, message: string): Promise<number>
+export function mediatedConnectionHandleMessage(handle: number, message: string): Promise<number>
+export function mediatedConnectionUpdateState(handle: number): Promise<number>
+export function mediatedConnectionDeleteConnection(handle: number): Promise<number>
+export function mediatedConnectionConnect(handle: number): Promise<string | null>
+export function mediatedConnectionSerialize(handle: number): string
+export function mediatedConnectionDeserialize(connectionData: string): number
+export function mediatedConnectionRelease(handle: number): void
+export function mediatedConnectionInviteDetails(handle: number): string
+export function mediatedConnectionSendPing(handle: number, comment?: string | undefined | null): Promise<void>
+export function mediatedConnectionSendDiscoveryFeatures(handle: number, query?: string | undefined | null, comment?: string | undefined | null): Promise<void>
+export function mediatedConnectionInfo(handle: number): Promise<string>
+export function mediatedConnectionMessagesDownload(connHandles: Array<number>, statusCodes?: string | undefined | null, uids?: string | undefined | null): Promise<string>
+export function mediatedConnectionSignData(handle: number, data: Buffer): Promise<Buffer>
+export function mediatedConnectionVerifySignature(handle: number, data: Buffer, signature: Buffer): Promise<boolean>

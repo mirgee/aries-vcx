@@ -1,0 +1,21 @@
+[package]
+name = "api-node"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[lib]
+name = "api_node"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+libvcx = { path = "../../../libvcx" }
+log = "0.4.16"
+napi = { version = "=2.9.1", default-features = false, features = [ "async" ] }
+napi-derive = { version = "=2.9.1" }
+
+[build-dependencies]
+napi-build = "2.0.1"

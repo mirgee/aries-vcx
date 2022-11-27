@@ -67,6 +67,14 @@ pub async fn mediated_connection_create_with_connection_request(request: String,
 }
 
 #[napi]
+pub async fn mediated_connection_send_message(handle: u32, msg: String) -> napi::Result<()> {
+    mediated_connection::send_generic_message(handle, &msg)
+        .await
+        .map(|_res| ())
+        .map_err(to_napi_err)
+}
+
+#[napi]
 pub async fn mediated_connection_create_with_connection_request_v2(request: String, pw_info: String) -> napi::Result<u32> {
     let pw_info: PairwiseInfo = serde_json::from_str(&pw_info).map_err(|err| {
         VcxError::from_msg(

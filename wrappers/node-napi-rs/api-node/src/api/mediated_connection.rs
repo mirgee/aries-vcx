@@ -1,141 +1,218 @@
 use napi::bindgen_prelude::Buffer;
 use napi_derive::napi;
 
+use vcx::api_lib::global::wallet::get_main_wallet_handle;
+use vcx::aries_vcx::error::{VcxError, VcxErrorKind};
+use vcx::aries_vcx::indy;
+use vcx::api_lib::api_handle::mediated_connection::{self, parse_status_codes};
+use vcx::aries_vcx::protocols::connection::pairwise_info::PairwiseInfo;
+use vcx::serde_json;
+
+use crate::error::to_napi_err;
+
 #[napi]
-pub fn mediated_connection_generate_public_invite(_public_did: String, _label: String) -> napi::Result<String> {
-    todo!()
+pub fn mediated_connection_generate_public_invite(public_did: String, label: String) -> napi::Result<String> {
+    mediated_connection::generate_public_invitation(&public_did, &label)
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub fn mediated_connection_get_pw_did(_handle: u32) -> napi::Result<String> {
-    todo!()
+pub fn mediated_connection_get_pw_did(handle: u32) -> napi::Result<String> {
+    mediated_connection::get_pw_did(handle)
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub fn mediated_connection_get_their_pw_did(_handle: u32) -> napi::Result<String> {
-    todo!()
+pub fn mediated_connection_get_their_pw_did(handle: u32) -> napi::Result<String> {
+    mediated_connection::get_their_pw_did(handle)
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub fn mediated_connection_get_thread_id(_handle: u32) -> napi::Result<String> {
-    todo!()
+pub fn mediated_connection_get_thread_id(handle: u32) -> napi::Result<String> {
+    mediated_connection::get_thread_id(handle)
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub fn mediated_connection_get_state(_handle: u32) -> u32 {
-    todo!()
+pub fn mediated_connection_get_state(handle: u32) -> u32 {
+    mediated_connection::get_state(handle)
 }
 
 #[napi]
-pub fn mediated_connection_get_source_id(_handle: u32) -> napi::Result<String> {
-    todo!()
+pub fn mediated_connection_get_source_id(handle: u32) -> napi::Result<String> {
+    mediated_connection::get_source_id(handle)
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_create(_source_id: String) -> napi::Result<u32> {
-    todo!()
+pub async fn mediated_connection_create(source_id: String) -> napi::Result<u32> {
+    mediated_connection::create_connection(&source_id)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_create_with_invite(_source_id: String, _details: String) -> napi::Result<u32> {
-    todo!()
+pub async fn mediated_connection_create_with_invite(source_id: String, details: String) -> napi::Result<u32> {
+    mediated_connection::create_connection_with_invite(&source_id, &details)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_create_with_connection_request(_request: String, _agent_handle: u32) -> napi::Result<u32> {
-    todo!()
+pub async fn mediated_connection_create_with_connection_request(request: String, agent_handle: u32) -> napi::Result<u32> {
+    mediated_connection::create_with_request(&request, agent_handle)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_create_with_connection_request_v2(_request: String, _pw_info: String) -> napi::Result<u32> {
-    todo!()
+pub async fn mediated_connection_create_with_connection_request_v2(request: String, pw_info: String) -> napi::Result<u32> {
+    let pw_info: PairwiseInfo = serde_json::from_str(&pw_info).map_err(|err| {
+        VcxError::from_msg(
+            VcxErrorKind::InvalidJson,
+            format!("Cannot deserialize pw info: {:?}", err),
+        )
+    })
+    .map_err(to_napi_err)?;
+    mediated_connection::create_with_request_v2(&request, pw_info)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_send_message(_handle: u32, _msg: String) -> napi::Result<()> {
-    todo!()
+pub async fn mediated_connection_send_handshake_reuse(handle: u32, oob_msg: String) -> napi::Result<()> {
+    mediated_connection::send_handshake_reuse(handle, &oob_msg)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_send_handshake_reuse(_handle: u32, _oob_msg: String) -> napi::Result<()> {
-    todo!()
+pub async fn mediated_connection_update_state_with_message(handle: u32, message: String) -> napi::Result<u32> {
+    mediated_connection::update_state_with_message(handle, &message)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_update_state_with_message(_handle: u32, _message: String) -> napi::Result<u32> {
-    todo!()
+pub async fn mediated_connection_handle_message(handle: u32, message: String) -> napi::Result<u32> {
+    mediated_connection::handle_message(handle, &message)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_handle_message(_handle: u32, _message: String) -> napi::Result<u32> {
-    todo!()
+pub async fn mediated_connection_update_state(handle: u32) -> napi::Result<u32> {
+    mediated_connection::update_state(handle)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_update_state(_handle: u32) -> napi::Result<u32> {
-    todo!()
+pub async fn mediated_connection_delete_connection(handle: u32) -> napi::Result<u32> {
+    mediated_connection::delete_connection(handle)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_delete_connection(_handle: u32) -> napi::Result<u32> {
-    todo!()
+pub async fn mediated_connection_connect(handle: u32) -> napi::Result<Option<String>> {
+    mediated_connection::connect(handle)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_connect(_handle: u32) -> napi::Result<Option<String>> {
-    todo!()
+pub fn mediated_connection_serialize(handle: u32) -> napi::Result<String> {
+    mediated_connection::to_string(handle)
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub fn mediated_connection_serialize(_handle: u32) -> napi::Result<String> {
-    todo!()
+pub fn mediated_connection_deserialize(connection_data: String) -> napi::Result<u32> {
+    mediated_connection::from_string(&connection_data)
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub fn mediated_connection_deserialize(_connection_data: String) -> napi::Result<u32> {
-    todo!()
+pub fn mediated_connection_release(handle: u32) -> napi::Result<()> {
+    mediated_connection::release(handle)
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub fn mediated_connection_release(_handle: u32) -> napi::Result<()> {
-    todo!()
+pub fn mediated_connection_invite_details(handle: u32) -> napi::Result<String> {
+    mediated_connection::get_invite_details(handle)
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub fn mediated_connection_invite_details(_handle: u32) -> napi::Result<String> {
-    todo!()
+pub async fn mediated_connection_send_ping(handle: u32, comment: Option<String>) -> napi::Result<()> {
+    mediated_connection::send_ping(handle, comment.as_deref())
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_send_ping(_handle: u32, _comment: Option<String>) -> napi::Result<()> {
-    todo!()
+pub async fn mediated_connection_send_discovery_features(handle: u32, query: Option<String>, comment: Option<String>) -> napi::Result<()> {
+    mediated_connection::send_discovery_features(handle, query.as_deref(), comment.as_deref())
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_send_discovery_features(_handle: u32, _query: Option<String>, _comment: Option<String>) -> napi::Result<()> {
-    todo!()
-}
-
-#[napi]
-pub async fn mediated_connection_info(_handle: u32) -> napi::Result<String> {
-    todo!()
+pub async fn mediated_connection_info(handle: u32) -> napi::Result<String> {
+    mediated_connection::get_connection_info(handle)
+        .await
+        .map_err(to_napi_err)
 }
 
 #[napi]
 pub async fn mediated_connection_messages_download(
-    _conn_handles: Vec<u32>,
-    _status_codes: Option<String>,
-    _uids: Option<String>,
+    conn_handles: Vec<u32>,
+    status_codes: Option<String>,
+    uids: Option<String>,
 ) -> napi::Result<String> {
-    todo!()
+    let status_codes = if let Some(status_codes) = status_codes {
+        let v: Vec<&str> = status_codes.split(',').collect();
+        let v = v.iter().map(|s| s.to_string()).collect::<Vec<String>>();
+        Some(v.to_owned())
+    } else {
+        None
+    };
+
+    let status_codes = parse_status_codes(status_codes).map_err(to_napi_err)?;
+
+
+    let uids = if let Some(uids) = uids {
+        let v: Vec<&str> = uids.split(',').collect();
+        let v = v.iter().map(|s| s.to_string()).collect::<Vec<String>>();
+        Some(v.to_owned())
+    } else {
+        None
+    };
+
+    mediated_connection::download_messages(conn_handles, status_codes, uids)
+        .await
+        .map(|msgs| serde_json::json!(msgs).to_string())
+        .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_sign_data(_handle: u32, _data: Buffer) -> napi::Result<Buffer> {
-    todo!()
+pub async fn mediated_connection_sign_data(handle: u32, data: Buffer) -> napi::Result<Buffer> {
+    let vk = mediated_connection::get_pw_verkey(handle)
+        .map_err(to_napi_err)?;
+    Ok(Buffer::from(indy::signing::sign(get_main_wallet_handle(), &vk, &data.to_vec())
+        .await
+        .map_err(to_napi_err)?
+    ))
 }
 
 #[napi]
-pub async fn mediated_connection_verify_signature(_handle: u32, _data: Buffer, _signature: Buffer) -> napi::Result<bool> {
-    todo!()
+pub async fn mediated_connection_verify_signature(handle: u32, data: Buffer, signature: Buffer) -> napi::Result<bool> {
+    let vk = mediated_connection::get_their_pw_verkey(handle)
+        .map_err(to_napi_err)?;
+    indy::signing::verify(&vk, &data.to_vec(), &signature.to_vec())
+        .await
+        .map_err(to_napi_err)
 }

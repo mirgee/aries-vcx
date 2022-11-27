@@ -30,7 +30,6 @@ export function mediatedConnectionCreate(sourceId: string): Promise<number>
 export function mediatedConnectionCreateWithInvite(sourceId: string, details: string): Promise<number>
 export function mediatedConnectionCreateWithConnectionRequest(request: string, agentHandle: number): Promise<number>
 export function mediatedConnectionCreateWithConnectionRequestV2(request: string, pwInfo: string): Promise<number>
-export function mediatedConnectionSendMessage(handle: number, msg: string): Promise<void>
 export function mediatedConnectionSendHandshakeReuse(handle: number, oobMsg: string): Promise<void>
 export function mediatedConnectionUpdateStateWithMessage(handle: number, message: string): Promise<number>
 export function mediatedConnectionHandleMessage(handle: number, message: string): Promise<number>

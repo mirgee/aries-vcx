@@ -1,7 +1,8 @@
+import * as ffiNapi from 'node-napi-rs';
 import { Callback } from 'ffi-napi';
-import * as ref from 'ref-napi';
 
 import { VCXInternalError } from '../errors';
+import { VCXInternalError1 } from '../errors-1';
 import { rustAPI } from '../rustlib';
 import { createFFICallbackPromise } from '../utils/ffi-helpers';
 
@@ -54,26 +55,9 @@ export interface ISearchNextRecordsOptions {
 
 export async function createWallet (config: object): Promise<void> {
   try {
-    await createFFICallbackPromise<void>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_create_wallet(0, JSON.stringify(config), cb)
-        if (rc) {
-          reject(rc)
-        }
-      },
-      (resolve, reject) => Callback(
-        'void',
-        ['uint32','uint32'],
-        (xhandle: number, err: number) => {
-          if (err) {
-            reject(err)
-            return
-          }
-          resolve()
-        })
-    )
+    return await ffiNapi.walletCreateMain(JSON.stringify(config))
   } catch (err: any) {
-    throw new VCXInternalError(err)
+    throw new VCXInternalError1(err)
   }
 }
 
@@ -99,57 +83,23 @@ export async function configureIssuerWallet (seed: string): Promise<string> {
     )
     return issuerConfig
   } catch (err: any) {
-    throw new VCXInternalError(err)
+    throw new VCXInternalError1(err)
   }
 }
 
 export async function openMainWallet (config: object): Promise<void> {
   try {
-    await createFFICallbackPromise<void>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_open_main_wallet(0, JSON.stringify(config), cb)
-        if (rc) {
-          reject(rc)
-        }
-      },
-      (resolve, reject) => Callback(
-        'void',
-        ['uint32','uint32'],
-        (xhandle: number, err: number) => {
-          if (err) {
-            reject(err)
-            return
-          }
-          resolve()
-        })
-    )
+    await ffiNapi.walletOpenAsMain(JSON.stringify(config))
   } catch (err: any) {
-    throw new VCXInternalError(err)
+    throw new VCXInternalError1(err)
   }
 }
 
 export async function closeMainWallet (): Promise<void> {
   try {
-    await createFFICallbackPromise<void>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_close_main_wallet(0, cb)
-        if (rc) {
-          reject(rc)
-        }
-      },
-      (resolve, reject) => Callback(
-        'void',
-        ['uint32','uint32'],
-        (xhandle: number, err: number) => {
-          if (err) {
-            reject(err)
-            return
-          }
-          resolve()
-        })
-    )
+    await ffiNapi.walletCloseMain()
   } catch (err: any) {
-    throw new VCXInternalError(err)
+    throw new VCXInternalError1(err)
   }
 }
 

@@ -47,3 +47,9 @@ export function mediatedConnectionInfo(handle: number): Promise<string>
 export function mediatedConnectionMessagesDownload(connHandles: Array<number>, statusCodes?: string | undefined | null, uids?: string | undefined | null): Promise<string>
 export function mediatedConnectionSignData(handle: number, data: Buffer): Promise<Buffer>
 export function mediatedConnectionVerifySignature(handle: number, data: Buffer, signature: Buffer): Promise<boolean>
+export function walletOpenAsMain(walletConfig: string): Promise<number>
+export function walletCreateMain(walletConfig: string): Promise<void>
+export function walletCloseMain(): Promise<void>
+export function initDefaultLogger(pattern?: string | undefined | null): void
+export function createAgencyClientForMainWallet(config: string): void
+export function enableMocks(): void

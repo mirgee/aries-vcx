@@ -5,18 +5,6 @@ import { createFFICallbackPromise } from '../utils/ffi-helpers';
 import { ISerializedData } from './common';
 import { VCXBase } from './vcx-base';
 
-/**
- * @interface Interface that represents the parameters for `CredentialDef.create` function.
- * @description
- * SourceId: Enterprise's personal identification for the user.
- * name: Name of credential definition
- * schemaId: The schema id given during the creation of the schema
- * revocation: type-specific configuration of credential definition revocation
- *     TODO: Currently supports ISSUANCE BY DEFAULT, support for ISSUANCE ON DEMAND will be added as part of ticket: IS-1074
- *     support_revocation: true|false - Optional, by default its false
- *     tails_file: path to tails file - Optional if support_revocation is false
- *     max_creds: size of tails file - Optional if support_revocation is false
- */
 export interface ICredentialDefCreateData {
   sourceId: string;
   schemaId: string;
@@ -63,9 +51,6 @@ export enum CredentialDefState {
   Published = 1,
 }
 
-/**
- * @class Class representing a credential Definition
- */
 export class CredentialDef extends VCXBase<ICredentialDefData> {
   public static async create({
     supportRevocation,
@@ -155,20 +140,6 @@ export class CredentialDef extends VCXBase<ICredentialDefData> {
   }
 
 
-  /**
-   * Retrieves the credential definition id associated with the created cred def.
-   * Example:
-   * ```
-   * data = {
-   *   name: 'testCredentialDefName',
-   *   revocation: false,
-   *   schemaId: 'testCredentialDefSchemaId',
-   *   sourceId: 'testCredentialDefSourceId'
-   * }
-   * credentialDef = await CredentialDef.create(data)
-   * id = await credentialDef.getCredDefId()
-   * ```
-   */
   public async getCredDefId(): Promise<string> {
     try {
       const credDefId = await createFFICallbackPromise<string>(
@@ -198,16 +169,6 @@ export class CredentialDef extends VCXBase<ICredentialDefData> {
     }
   }
 
-  /**
-   *
-   * Checks if credential definition is published on the Ledger and updates the state
-   *
-   * Example:
-   * ```
-   * await credentialDef.updateState()
-   * ```
-   * @returns {Promise<void>}
-   */
   public async updateState(): Promise<CredentialDefState> {
     try {
       const state = await createFFICallbackPromise<CredentialDefState>(
@@ -235,15 +196,6 @@ export class CredentialDef extends VCXBase<ICredentialDefData> {
     }
   }
 
-  /**
-   * Get the current state of the credential definition object
-   *
-   * Example:
-   * ```
-   * state = await credentialdef.getState()
-   * ```
-   * @returns {Promise<CredentialDefState>}
-   */
   public async getState(): Promise<CredentialDefState> {
     try {
       const stateRes = await createFFICallbackPromise<CredentialDefState>(

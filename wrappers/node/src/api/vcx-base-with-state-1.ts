@@ -6,7 +6,7 @@ export abstract class VCXBaseWithState1<SerializedData, StateType> extends VCXBa
   protected abstract _updateStFnV2: (
     handle: number,
     connHandle: number,
-  ) => StateType;
+  ) => Promise<StateType>;
   protected abstract _getStFn: (handle: number) => StateType;
 
   public async updateStateV2(connection: Connection): Promise<StateType> {

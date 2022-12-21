@@ -1,4 +1,14 @@
-pub mod out_of_band;
+pub mod agency_client;
+pub mod issuer_credential;
+pub mod ledger;
+pub mod logging;
 pub mod mediated_connection;
-pub mod wallet;
+pub mod out_of_band_receiver;
+pub mod out_of_band_sender;
+pub mod pool;
+pub mod testing;
 pub mod utils;
+pub mod wallet;
+pub mod schema;
+pub mod credential_definition;
+pub mod revocation_registry;

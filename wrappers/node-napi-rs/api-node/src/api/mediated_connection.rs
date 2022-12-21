@@ -1,37 +1,34 @@
 use napi::bindgen_prelude::Buffer;
 use napi_derive::napi;
+use vcx::api_vcx::api_global::wallet::{wallet_sign, wallet_verify};
+use vcx::api_vcx::api_handle::mediated_connection;
+use vcx::api_vcx::api_handle::mediated_connection::parse_status_codes;
 
-use vcx::api_lib::global::wallet::get_main_wallet_handle;
-use vcx::aries_vcx::error::{VcxError, VcxErrorKind};
 use vcx::aries_vcx::indy;
-use vcx::api_lib::api_handle::mediated_connection::{self, parse_status_codes};
 use vcx::aries_vcx::protocols::connection::pairwise_info::PairwiseInfo;
+use vcx::errors::error::{LibvcxError, LibvcxErrorKind};
 use vcx::serde_json;
 
 use crate::error::to_napi_err;
 
 #[napi]
 pub fn mediated_connection_generate_public_invite(public_did: String, label: String) -> napi::Result<String> {
-    mediated_connection::generate_public_invitation(&public_did, &label)
-        .map_err(to_napi_err)
+    mediated_connection::generate_public_invitation(&public_did, &label).map_err(to_napi_err)
 }
 
 #[napi]
 pub fn mediated_connection_get_pw_did(handle: u32) -> napi::Result<String> {
-    mediated_connection::get_pw_did(handle)
-        .map_err(to_napi_err)
+    mediated_connection::get_pw_did(handle).map_err(to_napi_err)
 }
 
 #[napi]
 pub fn mediated_connection_get_their_pw_did(handle: u32) -> napi::Result<String> {
-    mediated_connection::get_their_pw_did(handle)
-        .map_err(to_napi_err)
+    mediated_connection::get_their_pw_did(handle).map_err(to_napi_err)
 }
 
 #[napi]
 pub fn mediated_connection_get_thread_id(handle: u32) -> napi::Result<String> {
-    mediated_connection::get_thread_id(handle)
-        .map_err(to_napi_err)
+    mediated_connection::get_thread_id(handle).map_err(to_napi_err)
 }
 
 #[napi]
@@ -41,8 +38,7 @@ pub fn mediated_connection_get_state(handle: u32) -> u32 {
 
 #[napi]
 pub fn mediated_connection_get_source_id(handle: u32) -> napi::Result<String> {
-    mediated_connection::get_source_id(handle)
-        .map_err(to_napi_err)
+    mediated_connection::get_source_id(handle).map_err(to_napi_err)
 }
 
 #[napi]
@@ -60,7 +56,10 @@ pub async fn mediated_connection_create_with_invite(source_id: String, details: 
 }
 
 #[napi]
-pub async fn mediated_connection_create_with_connection_request(request: String, agent_handle: u32) -> napi::Result<u32> {
+pub async fn mediated_connection_create_with_connection_request(
+    request: String,
+    agent_handle: u32,
+) -> napi::Result<u32> {
     mediated_connection::create_with_request(&request, agent_handle)
         .await
         .map_err(to_napi_err)
@@ -75,14 +74,18 @@ pub async fn mediated_connection_send_message(handle: u32, msg: String) -> napi:
 }
 
 #[napi]
-pub async fn mediated_connection_create_with_connection_request_v2(request: String, pw_info: String) -> napi::Result<u32> {
-    let pw_info: PairwiseInfo = serde_json::from_str(&pw_info).map_err(|err| {
-        VcxError::from_msg(
-            VcxErrorKind::InvalidJson,
-            format!("Cannot deserialize pw info: {:?}", err),
-        )
-    })
-    .map_err(to_napi_err)?;
+pub async fn mediated_connection_create_with_connection_request_v2(
+    request: String,
+    pw_info: String,
+) -> napi::Result<u32> {
+    let pw_info: PairwiseInfo = serde_json::from_str(&pw_info)
+        .map_err(|err| {
+            LibvcxError::from_msg(
+                LibvcxErrorKind::InvalidJson,
+                format!("Cannot deserialize pw info: {:?}", err),
+            )
+        })
+        .map_err(to_napi_err)?;
     mediated_connection::create_with_request_v2(&request, pw_info)
         .await
         .map_err(to_napi_err)
@@ -96,28 +99,28 @@ pub async fn mediated_connection_send_handshake_reuse(handle: u32, oob_msg: Stri
 }
 
 #[napi]
-pub async fn mediated_connection_update_state_with_message(handle: u32, message: String) -> napi::Result<u32> {
+pub async fn mediated_connection_update_state_with_message(handle: u32, message: String) -> napi::Result<()> {
     mediated_connection::update_state_with_message(handle, &message)
         .await
         .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_handle_message(handle: u32, message: String) -> napi::Result<u32> {
+pub async fn mediated_connection_handle_message(handle: u32, message: String) -> napi::Result<()> {
     mediated_connection::handle_message(handle, &message)
         .await
         .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_update_state(handle: u32) -> napi::Result<u32> {
+pub async fn mediated_connection_update_state(handle: u32) -> napi::Result<()> {
     mediated_connection::update_state(handle)
         .await
         .map_err(to_napi_err)
 }
 
 #[napi]
-pub async fn mediated_connection_delete_connection(handle: u32) -> napi::Result<u32> {
+pub async fn mediated_connection_delete_connection(handle: u32) -> napi::Result<()> {
     mediated_connection::delete_connection(handle)
         .await
         .map_err(to_napi_err)
@@ -125,33 +128,27 @@ pub async fn mediated_connection_delete_connection(handle: u32) -> napi::Result<
 
 #[napi]
 pub async fn mediated_connection_connect(handle: u32) -> napi::Result<Option<String>> {
-    mediated_connection::connect(handle)
-        .await
-        .map_err(to_napi_err)
+    mediated_connection::connect(handle).await.map_err(to_napi_err)
 }
 
 #[napi]
 pub fn mediated_connection_serialize(handle: u32) -> napi::Result<String> {
-    mediated_connection::to_string(handle)
-        .map_err(to_napi_err)
+    mediated_connection::to_string(handle).map_err(to_napi_err)
 }
 
 #[napi]
 pub fn mediated_connection_deserialize(connection_data: String) -> napi::Result<u32> {
-    mediated_connection::from_string(&connection_data)
-        .map_err(to_napi_err)
+    mediated_connection::from_string(&connection_data).map_err(to_napi_err)
 }
 
 #[napi]
 pub fn mediated_connection_release(handle: u32) -> napi::Result<()> {
-    mediated_connection::release(handle)
-        .map_err(to_napi_err)
+    mediated_connection::release(handle).map_err(to_napi_err)
 }
 
 #[napi]
 pub fn mediated_connection_invite_details(handle: u32) -> napi::Result<String> {
-    mediated_connection::get_invite_details(handle)
-        .map_err(to_napi_err)
+    mediated_connection::get_invite_details(handle).map_err(to_napi_err)
 }
 
 #[napi]
@@ -162,7 +159,11 @@ pub async fn mediated_connection_send_ping(handle: u32, comment: Option<String>)
 }
 
 #[napi]
-pub async fn mediated_connection_send_discovery_features(handle: u32, query: Option<String>, comment: Option<String>) -> napi::Result<()> {
+pub async fn mediated_connection_send_discovery_features(
+    handle: u32,
+    query: Option<String>,
+    comment: Option<String>,
+) -> napi::Result<()> {
     mediated_connection::send_discovery_features(handle, query.as_deref(), comment.as_deref())
         .await
         .map_err(to_napi_err)
@@ -191,7 +192,6 @@ pub async fn mediated_connection_messages_download(
 
     let status_codes = parse_status_codes(status_codes).map_err(to_napi_err)?;
 
-
     let uids = if let Some(uids) = uids {
         let v: Vec<&str> = uids.split(',').collect();
         let v = v.iter().map(|s| s.to_string()).collect::<Vec<String>>();
@@ -208,19 +208,15 @@ pub async fn mediated_connection_messages_download(
 
 #[napi]
 pub async fn mediated_connection_sign_data(handle: u32, data: Buffer) -> napi::Result<Buffer> {
-    let vk = mediated_connection::get_pw_verkey(handle)
-        .map_err(to_napi_err)?;
-    Ok(Buffer::from(indy::signing::sign(get_main_wallet_handle(), &vk, &data.to_vec())
-        .await
-        .map_err(to_napi_err)?
-    ))
+    let vk = mediated_connection::get_pw_verkey(handle).map_err(to_napi_err)?;
+    let res = wallet_sign(&vk, &data.to_vec()).await.map_err(to_napi_err)?;
+    Ok(Buffer::from(res))
 }
 
 #[napi]
 pub async fn mediated_connection_verify_signature(handle: u32, data: Buffer, signature: Buffer) -> napi::Result<bool> {
-    let vk = mediated_connection::get_their_pw_verkey(handle)
-        .map_err(to_napi_err)?;
-    indy::signing::verify(&vk, &data.to_vec(), &signature.to_vec())
+    let vk = mediated_connection::get_pw_verkey(handle).map_err(to_napi_err)?;
+    wallet_verify(&vk, &data.to_vec(), &signature.to_vec())
         .await
         .map_err(to_napi_err)
 }

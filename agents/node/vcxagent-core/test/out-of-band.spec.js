@@ -9,7 +9,6 @@ const { IssuerStateType, HolderStateType, OutOfBandReceiver } = require('@hyperl
 
 beforeAll(async () => {
   jest.setTimeout(1000 * 60 * 4)
-  await initRustapi(process.env.VCX_LOG_LEVEL || 'error')
 })
 
 describe('test out of band communication', () => {

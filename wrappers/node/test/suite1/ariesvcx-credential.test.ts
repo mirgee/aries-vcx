@@ -7,15 +7,9 @@ import {
   credentialCreateWithOffer,
   dataCredentialCreateWithMsgId,
   dataCredentialCreateWithOffer,
-} from 'helpers/entities'
+} from 'helpers/entities';
 import { initVcxTestMode, shouldThrow } from 'helpers/utils';
-import {
-  Credential,
-  HolderStateType,
-  VCXCode,
-  VCXMock,
-  VCXMockMessage,
-} from 'src';
+import { Credential, HolderStateType, VCXCode, VCXMock, VCXMockMessage } from 'src';
 
 describe('Credential:', () => {
   before(() => initVcxTestMode());

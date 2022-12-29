@@ -1,17 +1,6 @@
-import { assert } from 'chai';
-import {initRustAPI, isRustApiInitialized, VCXInternalError} from 'src';
 import * as vcx from 'src';
 import * as uuid from 'uuid';
 import '../module-resolver-helper';
-import {VCXInternalErrorNapirs} from "../../src/errors-napirs";
-
-const oldConfig = {
-  // link_secret_alias: 'main',
-};
-
-const configThreadpool = {
-  threadpool_size: '4',
-};
 
 const configWalletSample = {
   use_latest_protocols: 'false',
@@ -39,10 +28,6 @@ const configAgency = {
   sdk_to_remote_verkey: 'FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB',
 };
 
-const issuerConfig = {
-  institution_did: '2hoqvcwupRTUNkXn6ArYzs',
-};
-
 const issuerSeed = '000000000000000000000000Trustee1';
 
 function generateWalletConfig() {
@@ -56,12 +41,8 @@ function generateWalletConfig() {
 
 export async function initVcxTestMode(): Promise<void> {
   // scheduleGarbageCollectionBeforeExit();
-  // if (!isRustApiInitialized()) {
-  //   initRustAPI();
-  // }
   const rustLogPattern = process.env.RUST_LOG || 'vcx=error';
   vcx.defaultLogger(rustLogPattern);
-  // vcx.initThreadpool(configThreadpool)
   const configWallet = generateWalletConfig();
   await vcx.createWallet(configWallet);
   await vcx.openMainWallet(configWallet);
@@ -74,7 +55,7 @@ export async function initVcxTestMode(): Promise<void> {
   vcx.enableMocks();
 }
 
-export const shouldThrow = (fn: () => any): Promise<VCXInternalError> =>
+export const shouldThrow = (fn: () => any): Promise<any> =>
   new Promise(async (resolve, reject) => {
     try {
       await fn();
@@ -84,35 +65,20 @@ export const shouldThrow = (fn: () => any): Promise<VCXInternalError> =>
     }
   });
 
-export const shouldThrowNapirs = (fn: () => any): Promise<VCXInternalErrorNapirs> =>
-  new Promise(async (resolve, reject) => {
-    try {
-      await fn();
-      reject(new Error(`${fn.toString()} should have thrown!`));
-    } catch (e: any) {
-      resolve(e);
-    }
-  });
+// let garbageCollectionBeforeExitIsScheduled = false;
 
-export const sleep = (timeout: number): Promise<void> =>
-  new Promise((resolve, _reject) => {
-    setTimeout(resolve, timeout);
-  });
-
-let garbageCollectionBeforeExitIsScheduled = false;
-
-// For some (yet unknown) reason, The Rust library segfaults on exit if global.gc() is not called explicitly.
-// To solve this issue, we call global.gc() on `beforeExit` event.
-// NB: This solution only works with Mocha.
-//     With Jest the 'beforeExit' event doesn't seem fired, so we are instead still using --forceExit before it segfaults.
-// TODO: Avoid using --exit
-const scheduleGarbageCollectionBeforeExit = () => {
-  if (!garbageCollectionBeforeExitIsScheduled) {
-    process.on('beforeExit', () => {
-      if (typeof global.gc != 'undefined') {
-        global.gc();
-      }
-    });
-  }
-  garbageCollectionBeforeExitIsScheduled = true;
-};
+// // For some (yet unknown) reason, The Rust library segfaults on exit if global.gc() is not called explicitly.
+// // To solve this issue, we call global.gc() on `beforeExit` event.
+// // NB: This solution only works with Mocha.
+// //     With Jest the 'beforeExit' event doesn't seem fired, so we are instead still using --forceExit before it segfaults.
+// // TODO: Avoid using --exit
+// const scheduleGarbageCollectionBeforeExit = () => {
+//   if (!garbageCollectionBeforeExitIsScheduled) {
+//     process.on('beforeExit', () => {
+//       if (typeof global.gc != 'undefined') {
+//         global.gc();
+//       }
+//     });
+//   }
+//   garbageCollectionBeforeExitIsScheduled = true;
+// };

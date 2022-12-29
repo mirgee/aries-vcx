@@ -252,15 +252,10 @@ export class Connection extends VCXBaseWithState1<IConnectionData, ConnectionSta
   }
 
   public async sendMessage(msgData: IMessageData): Promise<void> {
-    const sendMsgOptions = {
-      msg_title: msgData.title,
-      msg_type: msgData.type,
-      ref_msg_id: msgData.refMsgId,
-    };
     try {
       return await ffiNapi.mediatedConnectionSendMessage(
         this.handle,
-        JSON.stringify(sendMsgOptions),
+        msgData.msg,
       );
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);

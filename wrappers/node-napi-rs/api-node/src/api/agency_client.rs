@@ -9,35 +9,40 @@ use vcx::aries_vcx::agency_client::MessageStatusCode;
 use vcx::aries_vcx::utils::test_logger::LibvcxDefaultLogger;
 use vcx::errors::error::{LibvcxError, LibvcxErrorKind};
 use vcx::serde_json;
+use vcx::serde_json::json;
 
 use crate::error::to_napi_err;
 
 #[napi]
 pub fn create_agency_client_for_main_wallet(config: String) -> napi::Result<()> {
     let config = serde_json::from_str::<AgencyClientConfig>(&config)
-        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Serialization error: {:?}", err)))
+        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Deserialization error parsing config: {:?}", err)))
         .map_err(to_napi_err)?;
     agency_client::create_agency_client_for_main_wallet(&config).map_err(to_napi_err)?;
     Ok(())
 }
 
 #[napi]
-pub async fn provision_cloud_agent(config: String) -> napi::Result<()> {
+pub async fn provision_cloud_agent(config: String) -> napi::Result<String> {
     let config = serde_json::from_str::<AgentProvisionConfig>(&config)
-        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Serialization error: {:?}", err)))
+        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Deserialization error parsing config: {:?}", err)))
         .map_err(to_napi_err)?;
-    agency_client::provision_cloud_agent(&config).await.map_err(to_napi_err)?;
-    Ok(())
+    let agency_client_config = agency_client::provision_cloud_agent(&config).await.map_err(to_napi_err)?;
+    Ok(json!(agency_client_config).to_string())
 }
 
 // todo: can we accept Vec<String> instead of Stringified JSON in place of uids_by_conns?
 #[napi]
 pub async fn messages_update_status(status_code: String, uids_by_conns: String) -> napi::Result<()> {
-    let status_code = serde_json::from_str::<MessageStatusCode>(&status_code)
-        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Serialization error: {:?}", err)))
+    warn!("status_code: {status_code}");
+    warn!("uids_by_conns--{}--", uids_by_conns);
+
+    warn!("foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoo");
+    let status_code: MessageStatusCode = serde_json::from_str(&format!("\"{}\"", status_code))
+        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Deserialization error parsing status_code: {:?}", err)))
         .map_err(to_napi_err)?;
-    let uids_by_conns = serde_json::from_str::<Vec<UIDsByConn>>(&uids_by_conns)
-        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Serialization error: {:?}", err)))
+    let uids_by_conns: Vec<UIDsByConn> = serde_json::from_str(&uids_by_conns)
+        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Deserialization error parsing uids_by_conns: {:?}", err)))
         .map_err(to_napi_err)?;
 
     agency_client::agency_update_messages(status_code, uids_by_conns)

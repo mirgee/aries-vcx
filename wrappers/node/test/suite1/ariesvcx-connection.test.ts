@@ -2,18 +2,15 @@ import '../module-resolver-helper';
 
 import { assert } from 'chai';
 import {
-  connectionCreateInviterNull, createConnectionInviterFinished,
+  connectionCreateInviterNull,
+  createConnectionInviterFinished,
   createConnectionInviterInvited,
   createConnectionInviterRequested,
   dataConnectionCreate,
-} from 'helpers/entities'
+} from 'helpers/entities';
 import { initVcxTestMode, shouldThrow } from 'helpers/utils';
 import { Connection, ConnectionStateType, VCXCode } from 'src';
-import {
-  ARIES_PING,
-  ARIES_PING_RESPONSE,
-  ARIES_UNKNOWN_TYPE
-} from '../helpers/mockdata'
+import { ARIES_PING, ARIES_PING_RESPONSE, ARIES_UNKNOWN_TYPE } from '../helpers/mockdata';
 
 describe('Connection:', () => {
   before(() => initVcxTestMode());
@@ -169,10 +166,7 @@ describe('Connection:', () => {
       const details = connection.inviteDetails();
       const parsedInvitation = JSON.parse(details);
       assert.isString(parsedInvitation['@id']);
-      assert.equal(
-        parsedInvitation['@type'],
-        'https://didcomm.org/connections/1.0/invitation',
-      );
+      assert.equal(parsedInvitation['@type'], 'https://didcomm.org/connections/1.0/invitation');
       assert.isString(parsedInvitation.label);
       assert.isArray(parsedInvitation.recipientKeys);
       assert.equal(parsedInvitation.recipientKeys.length, 1);

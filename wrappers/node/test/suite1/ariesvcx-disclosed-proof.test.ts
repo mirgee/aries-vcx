@@ -2,7 +2,6 @@ import '../module-resolver-helper';
 
 import { assert } from 'chai';
 import {
-  connectionCreateInviterNull,
   createConnectionInviterRequested,
   dataDisclosedProofCreateWithMsgId,
   dataDisclosedProofCreateWithRequest,

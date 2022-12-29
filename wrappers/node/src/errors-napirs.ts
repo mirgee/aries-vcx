@@ -14,15 +14,7 @@ export class VCXInternalErrorNapirs extends Error {
   public readonly inheritedStackTraces: string[] = [];
 
   constructor(err: any) {
-    // console.error(`building vcx error from: ${JSON.stringify(err)}`);
-    // // @ts-ignore
-    //   console.error(`message: ${err.message}`);
-    // // @ts-ignore
-    //   console.error(`code: ${err.code}`);
-    // // @ts-ignore
-    //   console.error(`stack: ${err.stack}`);
-
-    const message = err.message || 'foobar';
+    const message = err.message || JSON.stringify(err);
     super(message);
 
     if (err instanceof VCXInternalErrorNapirs) {
@@ -39,6 +31,7 @@ export class VCXInternalErrorNapirs extends Error {
     if (err.message.startsWith(VCX_ERR_PREFIX)) {
       const vcxErrJson = err.message.slice(VCX_ERR_PREFIX_LENGTH);
       this.vcxError = JSON.parse(vcxErrJson);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.vcxCode = this.vcxError.vcxErrCode;
     } else {

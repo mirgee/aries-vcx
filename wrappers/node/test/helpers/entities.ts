@@ -13,17 +13,17 @@ import {
   ICredentialCreateWithOffer,
   ICredentialDefCreateDataV2,
   IDisclosedProofCreateData,
-  IDisclosedProofCreateWithMsgIdData, IIssuerCredentialBuildOfferDataV2,
+  IDisclosedProofCreateWithMsgIdData,
+  IIssuerCredentialBuildOfferDataV2,
   IProofCreateData,
   ISchemaCreateData,
-  ISchemaLookupData,
-  ISchemaPrepareForEndorserData,
   IssuerCredential,
-  Proof, RevocationRegistry,
+  Proof,
+  RevocationRegistry,
   Schema,
-} from 'src'
+} from 'src';
 import * as uuid from 'uuid';
-import {ARIES_CONNECTION_ACK, ARIES_CONNECTION_REQUEST} from './mockdata'
+import { ARIES_CONNECTION_ACK, ARIES_CONNECTION_REQUEST } from './mockdata';
 
 export const dataConnectionCreate = (): IConnectionCreateData => ({
   id: `testConnectionId-${uuid.v4()}`,
@@ -56,9 +56,9 @@ export const createConnectionInviterRequested = async (
 };
 
 export const createConnectionInviterFinished = async (
-    data = dataConnectionCreate(),
+  data = dataConnectionCreate(),
 ): Promise<Connection> => {
-  const connection = await createConnectionInviterRequested()
+  const connection = await createConnectionInviterRequested();
   await connection.updateStateWithMessage(JSON.stringify(ARIES_CONNECTION_ACK));
   return connection;
 };
@@ -67,7 +67,7 @@ export const dataCredentialDefCreate = (): ICredentialDefCreateDataV2 => ({
   schemaId: 'testCredentialDefSchemaId',
   sourceId: 'testCredentialDefSourceId',
   supportRevocation: true,
-  tag: '1'
+  tag: '1',
 });
 
 export const credentialDefCreate = async (
@@ -83,14 +83,14 @@ export const credentialDefCreate = async (
 
 export const revRegCreate = async (): Promise<RevocationRegistry> => {
   const rev_reg_config = {
-    issuerDid: "1234",
-    credDefId: "1234",
+    issuerDid: '1234',
+    credDefId: '1234',
     tag: 1,
-    tailsDir: "/foo/bar",
-    maxCreds: 5
-  }
-  return await RevocationRegistry.create(rev_reg_config)
-}
+    tailsDir: '/foo/bar',
+    maxCreds: 5,
+  };
+  return await RevocationRegistry.create(rev_reg_config);
+};
 
 export const dataCredentialCreateWithOffer = async (): Promise<ICredentialCreateWithOffer> => {
   const connection = await createConnectionInviterRequested();
@@ -156,14 +156,15 @@ export const disclosedProofCreateWithRequest = async (
   return disclousedProof;
 };
 
-export const dataDisclosedProofCreateWithMsgId = async (): Promise<IDisclosedProofCreateWithMsgIdData> => {
-  const connection = await createConnectionInviterRequested();
-  return {
-    connection,
-    msgId: 'testDisclousedProofMsgId',
-    sourceId: 'testDisclousedProofSourceId',
+export const dataDisclosedProofCreateWithMsgId =
+  async (): Promise<IDisclosedProofCreateWithMsgIdData> => {
+    const connection = await createConnectionInviterRequested();
+    return {
+      connection,
+      msgId: 'testDisclousedProofMsgId',
+      sourceId: 'testDisclousedProofSourceId',
+    };
   };
-};
 
 export const disclosedProofCreateWithMsgId = async (
   data?: IDisclosedProofCreateWithMsgIdData,
@@ -178,7 +179,9 @@ export const disclosedProofCreateWithMsgId = async (
   return disclousedProof;
 };
 
-export const issuerCredentialCreate = async (): Promise<[IssuerCredential, IIssuerCredentialBuildOfferDataV2]> => {
+export const issuerCredentialCreate = async (): Promise<
+  [IssuerCredential, IIssuerCredentialBuildOfferDataV2]
+> => {
   const credDef = await credentialDefCreate();
   const revReg = await revRegCreate();
   const issuerCredential = await IssuerCredential.create('testCredentialSourceId');
@@ -191,7 +194,7 @@ export const issuerCredentialCreate = async (): Promise<[IssuerCredential, IIssu
     },
     credDef,
     revReg,
-    comment: "foo"
+    comment: 'foo',
   };
   return [issuerCredential, buildOfferData];
 };
@@ -227,16 +230,6 @@ export const dataSchemaCreate = (): ISchemaCreateData => ({
   sourceId: 'testSchemaSourceId',
 });
 
-export const dataSchemaPrepareForEndorser = (): ISchemaPrepareForEndorserData => ({
-  data: {
-    attrNames: ['attr1', 'attr2'],
-    name: 'Schema',
-    version: '1.0.0',
-  },
-  endorser: 'V4SGRU86Z58d6TV7PBUe6f',
-  sourceId: 'testSchemaSourceId',
-});
-
 export const schemaCreate = async (data = dataSchemaCreate()): Promise<Schema> => {
   const schema = await Schema.create(data);
   assert.notEqual(schema.handle, undefined);
@@ -246,9 +239,3 @@ export const schemaCreate = async (data = dataSchemaCreate()): Promise<Schema> =
   assert.ok(schema.schemaId);
   return schema;
 };
-
-export const dataSchemaLookup = (): ISchemaLookupData => ({
-  schemaId: 'testSchemaSchemaId',
-  sourceId: 'testSchemaSourceId',
-});
-

@@ -1,6 +1,4 @@
 import * as ffi from 'node-napi-rs';
-import { rustAPI } from '../rustlib';
-import { createFFICallbackPromise } from '../utils/ffi-helpers';
 import { ISerializedData } from './common';
 import { VcxBaseNapirs } from './vcx-base-napirs';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
@@ -10,11 +8,8 @@ import { VCXInternalErrorNapirs } from '../errors-napirs';
  * @description
  */
 export interface ISchemaCreateData {
-  // Enterprise's personal identification for the user.
   sourceId: string;
-  // list of attributes that will make up the schema (the number of attributes should be less or equal than 125)
   data: ISchemaAttrs;
-  // future use (currently uses any address in the wallet)
 }
 
 /**
@@ -22,9 +17,7 @@ export interface ISchemaCreateData {
  * @description
  */
 export interface ISchemaPrepareForEndorserData {
-  // Enterprise's personal identification for the user.
   sourceId: string;
-  // list of attributes that will make up the schema (the number of attributes should be less or equal than 125)
   data: ISchemaAttrs;
   // DID of the Endorser that will submit the transaction.
   endorser: string;
@@ -51,18 +44,6 @@ export interface ISchemaSerializedData {
   version: string;
   data: string[];
   schema_id: string;
-}
-
-export interface ISchemaTxn {
-  sequence_num?: number;
-  sponsor?: string;
-  txn_timestamp?: number;
-  txn_type?: string;
-  data?: {
-    name: string;
-    version: string;
-    attr_names: string[];
-  };
 }
 
 export interface ISchemaParams {
@@ -94,10 +75,6 @@ export class Schema extends VcxBaseNapirs<ISchemaSerializedData> {
     return this._name;
   }
 
-  get schemaTransaction(): string {
-    return this._transaction;
-  }
-
   public static async create({ data, sourceId }: ISchemaCreateData): Promise<Schema> {
     try {
       const schema = new Schema(sourceId, { name: data.name, schemaId: '', schemaAttrs: data });
@@ -108,7 +85,7 @@ export class Schema extends VcxBaseNapirs<ISchemaSerializedData> {
         JSON.stringify(data.attrNames),
       );
       schema._setHandle(handle);
-      schema._schemaId = ffi.schemaGetSchemaId(handle)
+      schema._schemaId = ffi.schemaGetSchemaId(handle);
       return schema;
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
@@ -133,7 +110,6 @@ export class Schema extends VcxBaseNapirs<ISchemaSerializedData> {
   protected _name: string;
   protected _schemaId: string;
   protected _schemaAttrs: ISchemaAttrs;
-  private _transaction = '';
 
   constructor(sourceId: string, { name, schemaId, schemaAttrs }: ISchemaParams) {
     super(sourceId);

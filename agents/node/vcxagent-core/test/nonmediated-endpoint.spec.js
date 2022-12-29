@@ -5,11 +5,12 @@ const sleep = require('sleep-promise')
 const express = require('express')
 const { ConnectionStateType } = require('@hyperledger/node-vcx-wrapper')
 const { createAliceAndFaber } = require('./utils/utils')
-const { initRustapi } = require('../src/index')
+const { initRustLogger } = require('../src')
 
 beforeAll(async () => {
   jest.setTimeout(1000 * 60 * 4)
-  await initRustapi(process.env.VCX_LOG_LEVEL || 'vcx=error')
+  const rustLogPattern = process.env.RUST_LOG || 'vcx=error'
+  initRustLogger(rustLogPattern)
 })
 
 describe('test connecting via unmediated endpoint', () => {

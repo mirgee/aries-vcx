@@ -7,18 +7,20 @@ const uuid = require('uuid')
 const express = require('express')
 const bodyParser = require('body-parser')
 const { getFaberProofDataWithNonRevocation } = require('../test/utils/data')
-const { createVcxAgent, initRustapi, getSampleSchemaData } = require('../src/index')
+const { createVcxAgent, getSampleSchemaData } = require('../src/index')
 const { getAliceSchemaAttrs, getFaberCredDefName } = require('../test/utils/data')
 require('@hyperledger/node-vcx-wrapper')
 const { getStorageInfoMysql } = require('./wallet-common')
 const sleep = require('sleep-promise')
-const { testTailsUrl } = require('../src')
+const { testTailsUrl, initRustLogger } = require('../src')
 
 const tailsDir = '/tmp/tails'
 
 async function runFaber (options) {
   logger.info(`Starting. Revocation enabled=${options.revocation}`)
-  await initRustapi(process.env.VCX_LOG_LEVEL || 'vcx=error,agency_client=error')
+  const rustLogPattern = process.env.RUST_LOG || 'vcx=error'
+  initRustLogger(rustLogPattern)
+
   let faberServer
   let exitcode = 0
   let vcxAgent

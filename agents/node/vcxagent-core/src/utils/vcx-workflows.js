@@ -1,23 +1,12 @@
 const {
-  // initRustAPI, initThreadpool,
   initVcxWithConfig, provisionCloudAgent,
   createWallet, openMainWallet, closeMainWallet,
   configureIssuerWallet, defaultLogger
 } = require('@hyperledger/node-vcx-wrapper')
 
-// async function initRustApiAndLogger (logLevel) {
-//   const rustApi = initRustAPI()
-//   await rustApi.vcx_set_default_logger(logLevel)
-// }
-
 async function initVcxWithProvisionedAgentConfig (config) {
   await initVcxWithConfig(JSON.stringify(config))
 }
-//
-// async function initRustapi (logLevel = 'vcx=error', num_threads = 4) {
-//   await initRustApiAndLogger(logLevel)
-//   await initThreadpool({ num_threads })
-// }
 
 function initRustLogger (logPattern) {
   defaultLogger(logPattern)
@@ -67,8 +56,6 @@ async function provisionAgentInAgency (agentName, agencyConfig, seed, walletExtr
   return { agencyConfig, issuerConfig, walletConfig }
 }
 
-// module.exports.initRustApiAndLogger = initRustApiAndLogger
 module.exports.initVcxWithProvisionedAgentConfig = initVcxWithProvisionedAgentConfig
 module.exports.provisionAgentInAgency = provisionAgentInAgency
 module.exports.initRustLogger = initRustLogger
-// module.exports.initRustapi = initRustapi

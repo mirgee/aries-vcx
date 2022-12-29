@@ -34,10 +34,6 @@ pub async fn provision_cloud_agent(config: String) -> napi::Result<String> {
 // todo: can we accept Vec<String> instead of Stringified JSON in place of uids_by_conns?
 #[napi]
 pub async fn messages_update_status(status_code: String, uids_by_conns: String) -> napi::Result<()> {
-    warn!("status_code: {status_code}");
-    warn!("uids_by_conns--{}--", uids_by_conns);
-
-    warn!("foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoo");
     let status_code: MessageStatusCode = serde_json::from_str(&format!("\"{}\"", status_code))
         .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Deserialization error parsing status_code: {:?}", err)))
         .map_err(to_napi_err)?;

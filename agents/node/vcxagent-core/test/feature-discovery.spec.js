@@ -1,12 +1,13 @@
 /* eslint-env jest */
 require('jest')
 const { createPairedAliceAndFaber } = require('./utils/utils')
-const { initRustapi } = require('../src/index')
 const sleep = require('sleep-promise')
+const { initRustLogger } = require('../src')
 
 beforeAll(async () => {
   jest.setTimeout(1000 * 60 * 4)
-  await initRustapi(process.env.VCX_LOG_LEVEL || 'vcx=error')
+  const rustLogPattern = process.env.RUST_LOG || 'vcx=error'
+  initRustLogger(rustLogPattern)
 })
 
 describe('send ping, get ping', () => {

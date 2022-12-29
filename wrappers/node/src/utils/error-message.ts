@@ -1,13 +1,13 @@
 import { VCXInternalError } from '../errors';
 // import { rustAPI } from '../rustlib';
 
-export const errorMessage = (errorCode: number | Error): string => {
-  if (errorCode instanceof VCXInternalError) {
-    return errorCode.message;
+export const errorMessage = (err: number | Error): string => {
+  if (err instanceof VCXInternalError) {
+    return err.message;
   }
-  if (errorCode instanceof Error) {
+  if (err instanceof Error) {
     // const message = rustAPI().vcx_error_c_message(VCXCode.UNKNOWN_ERROR);
-    return `${errorCode.message}`;
+    return `${err.message}`;
   }
-  return `${errorCode}`
+  return `${err}`
 };

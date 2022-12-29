@@ -37,9 +37,9 @@ export function mediatedConnectionCreateWithConnectionRequest(request: string, a
 export function mediatedConnectionSendMessage(handle: number, msg: string): Promise<void>
 export function mediatedConnectionCreateWithConnectionRequestV2(request: string, pwInfo: string): Promise<number>
 export function mediatedConnectionSendHandshakeReuse(handle: number, oobMsg: string): Promise<void>
-export function mediatedConnectionUpdateStateWithMessage(handle: number, message: string): Promise<void>
+export function mediatedConnectionUpdateStateWithMessage(handle: number, message: string): Promise<number>
 export function mediatedConnectionHandleMessage(handle: number, message: string): Promise<void>
-export function mediatedConnectionUpdateState(handle: number): Promise<void>
+export function mediatedConnectionUpdateState(handle: number): Promise<number>
 export function mediatedConnectionDeleteConnection(handle: number): Promise<void>
 export function mediatedConnectionConnect(handle: number): Promise<string | null>
 export function mediatedConnectionSerialize(handle: number): string

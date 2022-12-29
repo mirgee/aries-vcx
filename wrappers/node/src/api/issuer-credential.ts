@@ -4,7 +4,7 @@ import { Connection, IConnectionData } from './mediated-connection';
 import { CredentialDef } from './credential-def';
 import { RevocationRegistry } from './revocation-registry';
 import { VCXBaseWithState1 } from './vcx-base-with-state-1';
-import { VCXInternalError1 } from '../errors-1';
+import { VCXInternalErrorNapirs } from '../errors-napirs';
 
 
 /**
@@ -83,7 +83,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
       connection._setHandle(await ffiNapi.issuerCredentialCreate(sourceId));
       return connection;
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -93,7 +93,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     try {
       return super._deserialize(IssuerCredential, serializedData);
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -115,7 +115,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
         message,
       );
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -123,7 +123,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     try {
       return await ffiNapi.issuerCredentialSendOfferV2(this.handle, connection.handle);
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -131,7 +131,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     try {
       return await ffiNapi.issuerCredentialMarkOfferMsgSent(this.handle);
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -150,7 +150,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
         comment || '',
       );
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -158,7 +158,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     try {
       return await ffiNapi.issuerCredentialGetOfferMsg(this.handle);
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -166,7 +166,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     try {
       return await ffiNapi.issuerCredentialGetThreadId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -174,7 +174,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     try {
       return await ffiNapi.issuerCredentialSendCredential(this.handle, connection.handle);
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -186,7 +186,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     try {
       return await ffiNapi.issuerCredentialRevokeLocal(this.handle);
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -194,7 +194,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     try {
       return await ffiNapi.issuerCredentialIsRevokable(this.handle);
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -202,7 +202,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     try {
       return await ffiNapi.issuerCredentialGetRevRegId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 

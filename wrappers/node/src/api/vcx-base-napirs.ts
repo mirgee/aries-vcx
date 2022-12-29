@@ -1,10 +1,10 @@
-import { VCXInternalError1 } from '../errors-1';
+import { VCXInternalErrorNapirs } from '../errors-napirs';
 import { ISerializedData } from './common';
 
-export abstract class VCXBase1<SerializedData> {
+export abstract class VcxBaseNapirs<SerializedData> {
   private _handleRef!: number;
 
-  protected static _deserialize<T extends VCXBase1<unknown>, P = unknown>(
+  protected static _deserialize<T extends VcxBaseNapirs<unknown>, P = unknown>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     VCXClass: new (sourceId: string, args?: any) => T,
     objData: ISerializedData<{ source_id: string }>,
@@ -15,7 +15,7 @@ export abstract class VCXBase1<SerializedData> {
       obj._initFromData(objData);
       return obj;
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 
@@ -31,7 +31,7 @@ export abstract class VCXBase1<SerializedData> {
     try {
       return JSON.parse(this._serializeFn(this.handle));
     } catch (err: any) {
-      throw new VCXInternalError1(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 

@@ -1,8 +1,8 @@
 import { VCXInternalError } from '../errors';
 import { Connection } from './mediated-connection';
-import { VCXBase1 } from './vcx-base-1';
+import { VcxBaseNapirs } from './vcx-base-napirs';
 
-export abstract class VCXBaseWithState1<SerializedData, StateType> extends VCXBase1<SerializedData> {
+export abstract class VCXBaseWithState1<SerializedData, StateType> extends VcxBaseNapirs<SerializedData> {
   protected abstract _updateStFnV2: (
     handle: number,
     connHandle: number,

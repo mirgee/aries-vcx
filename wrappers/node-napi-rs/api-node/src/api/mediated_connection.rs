@@ -99,7 +99,7 @@ pub async fn mediated_connection_send_handshake_reuse(handle: u32, oob_msg: Stri
 }
 
 #[napi]
-pub async fn mediated_connection_update_state_with_message(handle: u32, message: String) -> napi::Result<()> {
+pub async fn mediated_connection_update_state_with_message(handle: u32, message: String) -> napi::Result<u32> {
     mediated_connection::update_state_with_message(handle, &message)
         .await
         .map_err(to_napi_err)
@@ -113,7 +113,7 @@ pub async fn mediated_connection_handle_message(handle: u32, message: String) ->
 }
 
 #[napi]
-pub async fn mediated_connection_update_state(handle: u32) -> napi::Result<()> {
+pub async fn mediated_connection_update_state(handle: u32) -> napi::Result<u32> {
     mediated_connection::update_state(handle)
         .await
         .map_err(to_napi_err)

@@ -247,28 +247,8 @@ export const schemaCreate = async (data = dataSchemaCreate()): Promise<Schema> =
   return schema;
 };
 
-export const schemaPrepareForEndorser = async (
-  data = dataSchemaPrepareForEndorser(),
-): Promise<Schema> => {
-  const schema = await Schema.prepareForEndorser(data);
-  assert.notEqual(schema.handle, undefined);
-  assert.equal(schema.sourceId, data.sourceId);
-  assert.equal(schema.name, data.data.name);
-  assert.deepEqual(schema.schemaAttrs, data.data);
-  assert.ok(schema.schemaId);
-  assert.ok(schema.schemaTransaction);
-  return schema;
-};
-
 export const dataSchemaLookup = (): ISchemaLookupData => ({
   schemaId: 'testSchemaSchemaId',
   sourceId: 'testSchemaSourceId',
 });
 
-export const schemaLookup = async (data = dataSchemaLookup()): Promise<Schema> => {
-  const schema = await Schema.lookup(data);
-  assert.notEqual(schema.handle, undefined);
-  assert.equal(schema.sourceId, data.sourceId);
-  assert.ok(schema.schemaId);
-  return schema;
-};

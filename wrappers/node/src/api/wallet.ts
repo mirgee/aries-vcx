@@ -2,7 +2,7 @@ import * as ffiNapi from 'node-napi-rs';
 import { Callback } from 'ffi-napi';
 
 import { VCXInternalError } from '../errors';
-import { VCXInternalError1 } from '../errors-1';
+import { VCXInternalErrorNapirs } from '../errors-napirs';
 import { rustAPI } from '../rustlib';
 import { createFFICallbackPromise } from '../utils/ffi-helpers';
 
@@ -53,53 +53,35 @@ export interface ISearchNextRecordsOptions {
   count: number;
 }
 
-export async function createWallet (config: object): Promise<void> {
+export async function createWallet(config: object): Promise<void> {
   try {
-    return await ffiNapi.walletCreateMain(JSON.stringify(config))
+    return await ffiNapi.walletCreateMain(JSON.stringify(config));
   } catch (err: any) {
-    throw new VCXInternalError1(err)
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
-export async function configureIssuerWallet (seed: string): Promise<string> {
+export async function configureIssuerWallet(seed: string): Promise<string> {
   try {
-    const issuerConfig = await createFFICallbackPromise<string>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_configure_issuer_wallet(0, seed, cb)
-        if (rc) {
-          reject(rc)
-        }
-      },
-      (resolve, reject) => Callback(
-        'void',
-        ['uint32','uint32','string'],
-        (xhandle: number, err: number, config: string) => {
-          if (err) {
-            reject(err)
-            return
-          }
-          resolve(config)
-        })
-    )
-    return issuerConfig
+    return await ffiNapi.configureIssuerWallet(seed);
   } catch (err: any) {
-    throw new VCXInternalError1(err)
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
-export async function openMainWallet (config: object): Promise<void> {
+export async function openMainWallet(config: object): Promise<void> {
   try {
-    await ffiNapi.walletOpenAsMain(JSON.stringify(config))
+    await ffiNapi.walletOpenAsMain(JSON.stringify(config));
   } catch (err: any) {
-    throw new VCXInternalError1(err)
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
-export async function closeMainWallet (): Promise<void> {
+export async function closeMainWallet(): Promise<void> {
   try {
-    await ffiNapi.walletCloseMain()
+    await ffiNapi.walletCloseMain();
   } catch (err: any) {
-    throw new VCXInternalError1(err)
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
@@ -107,7 +89,7 @@ export async function closeMainWallet (): Promise<void> {
  * @class Class representing a Wallet
  */
 export class Wallet {
-   /**
+  /**
    * Adds a record to the wallet for storage
    * Example:
    * ```

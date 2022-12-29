@@ -1,9 +1,14 @@
 use vcx::aries_vcx::errors::error::AriesVcxError;
 use vcx::errors::error::LibvcxError;
+use vcx::serde_json::json;
 
 pub fn to_napi_err(err: LibvcxError) -> napi::Error {
-    error!("{}", err.to_string());
-    napi::Error::new(napi::Status::Unknown, format!("{:?}", Into::<u32>::into(err.kind())))
+    let reason = json!({
+        "vcxErrKind": err.kind().to_string(),
+        "vcxErrCode": u32::from(err.kind()),
+        "vcxErrMessage": err.msg,
+    }).to_string();
+    napi::Error::new(napi::Status::GenericFailure, format!("vcx_err_json:{reason}"))
 }
 
 pub fn ariesvcx_to_napi_err(err: AriesVcxError) -> napi::Error {

@@ -1,9 +1,7 @@
 use napi_derive::napi;
 
 use crate::error::to_napi_err;
-use vcx::api_vcx::api_global::ledger::{
-    ledger_get_txn_author_agreement, ledger_set_txn_author_agreement,
-};
+use vcx::api_vcx::api_global::ledger::{ledger_get_txn_author_agreement, ledger_set_txn_author_agreement};
 
 #[napi]
 async fn get_ledger_author_agreement() -> napi::Result<String> {
@@ -20,6 +18,5 @@ fn set_active_txn_author_agreement_meta(
     acc_mech_type: String,
     time_of_acceptance: u32,
 ) -> napi::Result<()> {
-    ledger_set_txn_author_agreement(text, version, hash, acc_mech_type, time_of_acceptance as u64)
-        .map_err(to_napi_err)
+    ledger_set_txn_author_agreement(text, version, hash, acc_mech_type, time_of_acceptance as u64).map_err(to_napi_err)
 }

@@ -6,9 +6,7 @@ use crate::error::to_napi_err;
 #[napi]
 // TODO: Does not need to be async
 pub async fn out_of_band_sender_create(config: String) -> napi::Result<u32> {
-    out_of_band::create_out_of_band(&config)
-        .await
-        .map_err(to_napi_err)
+    out_of_band::create_out_of_band(&config).await.map_err(to_napi_err)
 }
 
 #[napi]

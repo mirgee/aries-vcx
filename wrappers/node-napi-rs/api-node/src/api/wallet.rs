@@ -42,8 +42,6 @@ pub async fn vcx_init_issuer_config(config: String) -> napi::Result<()> {
 
 #[napi]
 pub async fn configure_issuer_wallet(enterprise_seed: String) -> napi::Result<String> {
-    let res = wallet_configure_issuer(&enterprise_seed)
-        .await
-        .map_err(to_napi_err)?;
+    let res = wallet_configure_issuer(&enterprise_seed).await.map_err(to_napi_err)?;
     Ok(json!(res).to_string())
 }

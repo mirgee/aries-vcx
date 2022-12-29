@@ -7,7 +7,8 @@ pub fn to_napi_err(err: LibvcxError) -> napi::Error {
         "vcxErrKind": err.kind().to_string(),
         "vcxErrCode": u32::from(err.kind()),
         "vcxErrMessage": err.msg,
-    }).to_string();
+    })
+    .to_string();
     napi::Error::new(napi::Status::GenericFailure, format!("vcx_err_json:{reason}"))
 }
 

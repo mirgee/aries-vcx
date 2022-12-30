@@ -47,7 +47,18 @@ fn disclosed_proof_deserialize(data: String) -> napi::Result<u32> {
 }
 
 #[napi]
-async fn v2_disclosed_proof_update_state(handle: u32, message: String, connection_handle: u32) -> napi::Result<u32> {
+async fn v2_disclosed_proof_update_state(handle: u32, connection_handle: u32) -> napi::Result<u32> {
+    disclosed_proof::update_state(handle, None, connection_handle)
+        .await
+        .map_err(to_napi_err)
+}
+
+#[napi]
+async fn v2_disclosed_proof_update_state_with_message(
+    handle: u32,
+    message: String,
+    connection_handle: u32,
+) -> napi::Result<u32> {
     disclosed_proof::update_state(handle, Some(&message), connection_handle)
         .await
         .map_err(to_napi_err)

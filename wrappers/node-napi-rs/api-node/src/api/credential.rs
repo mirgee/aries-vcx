@@ -54,10 +54,7 @@ async fn v2_credential_update_state_with_message(
 }
 
 #[napi]
-async fn v2_credential_update_state(
-    handle_credential: u32,
-    connection_handle: u32,
-) -> napi::Result<u32> {
+async fn v2_credential_update_state(handle_credential: u32, connection_handle: u32) -> napi::Result<u32> {
     credential::update_state(handle_credential, None, connection_handle)
         .await
         .map_err(to_napi_err)

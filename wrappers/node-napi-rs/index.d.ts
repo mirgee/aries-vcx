@@ -40,7 +40,8 @@ export function disclosedProofRejectProof(handle: number, handleConnection: numb
 export function disclosedProofGetProofMsg(handle: number): string
 export function disclosedProofSerialize(handle: number): string
 export function disclosedProofDeserialize(data: string): number
-export function v2DisclosedProofUpdateState(handle: number, message: string, connectionHandle: number): Promise<number>
+export function v2DisclosedProofUpdateState(handle: number, connectionHandle: number): Promise<number>
+export function v2DisclosedProofUpdateStateWithMessage(handle: number, message: string, connectionHandle: number): Promise<number>
 export function disclosedProofGetState(handle: number): number
 export function disclosedProofGetRequests(handleConnection: number): Promise<string>
 export function disclosedProofRetrieveCredentials(handle: number): Promise<string>
@@ -120,7 +121,7 @@ export function openMainPool(poolConfig: string): Promise<void>
 export function closeMainPool(): Promise<void>
 export function credentialCreateWithOffer(sourceId: string, offer: string): number
 export function proofCreate(sourceId: string, requestedAttrs: string, requestedPredicates: string, revocationDetails: string, name: string): Promise<number>
-export function getProofMsg(handle: number): string
+export function proofGetProofMsg(handle: number): string
 export function proofRelease(handle: number): void
 export function proofSendRequest(handleProof: number, handleConnection: number): Promise<void>
 export function proofGetRequestMsg(handle: number): string
@@ -130,7 +131,7 @@ export function v2ProofUpdateState(handleProof: number, connectionHandle: number
 export function v2ProofUpdateStateWithMessage(handleProof: number, message: string, connectionHandle: number): Promise<number>
 export function proofGetState(handle: number): number
 export function proofGetThreadId(handle: number): Promise<string>
-export function markPresentationRequestMsgSent(handle: number): string
+export function markPresentationRequestMsgSent(handle: number): void
 export function publicAgentCreate(sourceId: string, institutionDid: string): Promise<number>
 export function publicAgentDownloadConnectionRequests(handle: number, uids?: string | undefined | null): Promise<string>
 export function publicAgentDownloadMessage(handle: number, uid: string): Promise<string>

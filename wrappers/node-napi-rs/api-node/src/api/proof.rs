@@ -32,7 +32,7 @@ async fn proof_create(
 }
 
 #[napi]
-fn get_proof_msg(handle: u32) -> napi::Result<String> {
+fn proof_get_proof_msg(handle: u32) -> napi::Result<String> {
     proof::get_presentation_msg(handle).map_err(to_napi_err)
 }
 
@@ -93,6 +93,6 @@ async fn proof_get_thread_id(handle: u32) -> napi::Result<String> {
 }
 
 #[napi]
-fn mark_presentation_request_msg_sent(handle: u32) -> napi::Result<String> {
-    proof::get_presentation_request_msg(handle).map_err(to_napi_err)
+fn mark_presentation_request_msg_sent(handle: u32) -> napi::Result<()> {
+    proof::mark_presentation_request_msg_sent(handle).map_err(to_napi_err)
 }

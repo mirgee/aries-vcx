@@ -1,6 +1,7 @@
 pub mod agency_client;
 pub mod credential;
 pub mod credential_definition;
+pub mod disclosed_proof;
 pub mod issuer_credential;
 pub mod ledger;
 pub mod logging;

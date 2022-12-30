@@ -3,6 +3,7 @@ use vcx::errors::error::LibvcxError;
 use vcx::serde_json::json;
 
 pub fn to_napi_err(err: LibvcxError) -> napi::Error {
+    warn!("to_napi_err: {:?}", err);
     let reason = json!({
         "vcxErrKind": err.kind().to_string(),
         "vcxErrCode": u32::from(err.kind()),

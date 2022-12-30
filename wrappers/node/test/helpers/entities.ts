@@ -9,7 +9,6 @@ import {
   CredentialDef,
   DisclosedProof,
   IConnectionCreateData,
-  ICredentialCreateWithMsgId,
   ICredentialCreateWithOffer,
   ICredentialDefCreateDataV2,
   IDisclosedProofCreateData,
@@ -110,28 +109,6 @@ export const credentialCreateWithOffer = async (
   const credential = await Credential.create(data);
   assert.notEqual(credential.handle, undefined);
   assert.equal(credential.sourceId, data.sourceId);
-  return credential;
-};
-
-export const dataCredentialCreateWithMsgId = async (): Promise<ICredentialCreateWithMsgId> => {
-  const connection = await createConnectionInviterRequested();
-  return {
-    connection,
-    msgId: 'testCredentialMsgId',
-    sourceId: 'testCredentialSourceId',
-  };
-};
-
-export const credentialCreateWithMsgId = async (
-  data?: ICredentialCreateWithMsgId,
-): Promise<Credential> => {
-  if (!data) {
-    data = await dataCredentialCreateWithMsgId();
-  }
-  const credential = await Credential.createWithMsgId(data);
-  assert.notEqual(credential.handle, undefined);
-  assert.equal(credential.sourceId, data.sourceId);
-  assert.ok(credential.credOffer);
   return credential;
 };
 

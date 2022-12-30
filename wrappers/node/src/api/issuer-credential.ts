@@ -1,47 +1,10 @@
-import * as ffiNapi from 'node-napi-rs';
+import * as ffi from 'node-napi-rs';
 import { ISerializedData, IssuerStateType } from './common';
-import { Connection, IConnectionData } from './mediated-connection';
+import { Connection } from './mediated-connection';
 import { CredentialDef } from './credential-def';
 import { RevocationRegistry } from './revocation-registry';
 import { VCXBaseWithState1 } from './vcx-base-with-state-1';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
-
-
-/**
- * @description Interface that represents the parameters for `IssuerCredential.create` function.
- * @interface
- */
-export interface IIssuerCredentialCreateData {
-  // Enterprise's personal identification for the user.
-  sourceId: string;
-  // Handle of the correspondent credential definition object
-  credDefHandle: number;
-  // Data attributes offered to person in the credential ('{"state":"UT"}')
-  attr: {
-    [index: string]: string;
-  };
-  // Name of the credential - ex. Drivers Licence
-  credentialName: string;
-  // price of credential
-  price: string;
-  issuerDid: string;
-}
-
-export interface IIssuerCredentialOfferSendData {
-  connection: Connection;
-  credDef: CredentialDef;
-  attr: {
-    [index: string]: string;
-  };
-}
-
-export interface IIssuerCredentialBuildOfferData {
-  credDef: CredentialDef;
-  attr: {
-    [index: string]: string;
-  };
-  comment: string;
-}
 
 export interface IIssuerCredentialBuildOfferDataV2 {
   credDef: CredentialDef;
@@ -50,17 +13,6 @@ export interface IIssuerCredentialBuildOfferDataV2 {
     [index: string]: string;
   };
   comment?: string;
-}
-
-export interface IIssuerCredentialVCXAttributes {
-  [index: string]: string;
-}
-
-export interface IIssuerCredentialParams {
-  credDefHandle: number;
-  credentialName: string;
-  attr: IIssuerCredentialVCXAttributes;
-  price: string;
 }
 
 /**
@@ -80,7 +32,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
   public static async create(sourceId: string): Promise<IssuerCredential> {
     try {
       const connection = new IssuerCredential(sourceId);
-      connection._setHandle(await ffiNapi.issuerCredentialCreate(sourceId));
+      connection._setHandle(await ffi.issuerCredentialCreate(sourceId));
       return connection;
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
@@ -97,11 +49,11 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     }
   }
 
-  protected _releaseFn = ffiNapi.issuerCredentialRelease;
-  protected _updateStFnV2 = ffiNapi.issuerCredentialUpdateStateV2;
-  protected _getStFn = ffiNapi.issuerCredentialGetState;
-  protected _serializeFn = ffiNapi.issuerCredentialSerialize;
-  protected _deserializeFn = ffiNapi.issuerCredentialDeserialize;
+  protected _releaseFn = ffi.issuerCredentialRelease;
+  protected _updateStFnV2 = ffi.issuerCredentialUpdateStateV2;
+  protected _getStFn = ffi.issuerCredentialGetState;
+  protected _serializeFn = ffi.issuerCredentialSerialize;
+  protected _deserializeFn = ffi.issuerCredentialDeserialize;
 
   constructor(sourceId: string) {
     super(sourceId);
@@ -109,7 +61,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
 
   public async updateStateWithMessage(connection: Connection, message: string): Promise<number> {
     try {
-      return await ffiNapi.issuerCredentialUpdateStateWithMessageV2(
+      return await ffi.issuerCredentialUpdateStateWithMessageV2(
         this.handle,
         connection.handle,
         message,
@@ -121,7 +73,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
 
   public async sendOfferV2(connection: Connection): Promise<void> {
     try {
-      return await ffiNapi.issuerCredentialSendOfferV2(this.handle, connection.handle);
+      return await ffi.issuerCredentialSendOfferV2(this.handle, connection.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
@@ -129,7 +81,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
 
   public async markCredentialOfferMsgSent(): Promise<void> {
     try {
-      return await ffiNapi.issuerCredentialMarkOfferMsgSent(this.handle);
+      return await ffi.issuerCredentialMarkOfferMsgSent(this.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
@@ -142,7 +94,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
     comment,
   }: IIssuerCredentialBuildOfferDataV2): Promise<void> {
     try {
-      return await ffiNapi.issuerCredentialBuildOfferMsgV2(
+      return await ffi.issuerCredentialBuildOfferMsgV2(
         this.handle,
         credDef.handle,
         revReg?.handle || 0,
@@ -156,7 +108,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
 
   public async getCredentialOfferMsg(): Promise<string> {
     try {
-      return await ffiNapi.issuerCredentialGetOfferMsg(this.handle);
+      return await ffi.issuerCredentialGetOfferMsg(this.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
@@ -164,7 +116,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
 
   public async getThreadId(): Promise<string> {
     try {
-      return await ffiNapi.issuerCredentialGetThreadId(this.handle);
+      return await ffi.issuerCredentialGetThreadId(this.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
@@ -172,7 +124,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
 
   public async sendCredential(connection: Connection): Promise<number> {
     try {
-      return await ffiNapi.issuerCredentialSendCredential(this.handle, connection.handle);
+      return await ffi.issuerCredentialSendCredential(this.handle, connection.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
@@ -184,7 +136,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
 
   public async revokeCredentialLocal(): Promise<void> {
     try {
-      return await ffiNapi.issuerCredentialRevokeLocal(this.handle);
+      return await ffi.issuerCredentialRevokeLocal(this.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
@@ -192,7 +144,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
 
   public async isRevokable(): Promise<boolean> {
     try {
-      return await ffiNapi.issuerCredentialIsRevokable(this.handle);
+      return await ffi.issuerCredentialIsRevokable(this.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
@@ -200,7 +152,7 @@ export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, I
 
   public async getRevRegId(): Promise<string> {
     try {
-      return await ffiNapi.issuerCredentialGetRevRegId(this.handle);
+      return await ffi.issuerCredentialGetRevRegId(this.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }

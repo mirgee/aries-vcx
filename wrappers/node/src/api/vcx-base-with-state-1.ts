@@ -34,3 +34,4 @@ export abstract class VCXBaseWithState1<SerializedData, StateType> extends VcxBa
     }
   }
 }
+

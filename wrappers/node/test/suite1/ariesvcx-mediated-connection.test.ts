@@ -95,22 +95,6 @@ describe('Connection:', () => {
       assert.ok(source_id);
       assert.equal(source_id, connection.sourceId);
     });
-
-    // TODO: restore for aries
-    it.skip('throws: not initialized', async () => {
-      const connection = new (Connection as any)();
-      const error = await shouldThrow(() => connection.serialize());
-      assert.equal(error.vcxCode, VCXCode.INVALID_CONNECTION_HANDLE);
-    });
-
-    // TODO: Is this op supported in 3.0?
-    it.skip('throws: connection deleted', async () => {
-      const connection = await connectionCreateInviterNull();
-      await connection.connect();
-      connection.delete();
-      const error = await shouldThrow(() => connection.serialize());
-      assert.equal(error.vcxCode, VCXCode.INVALID_CONNECTION_HANDLE);
-    });
   });
 
   describe('deserialize:', () => {

@@ -7,13 +7,15 @@ export function updateWebhookUrl(webhookUrl: string): Promise<void>
 export function createAgencyClientForMainWallet(config: string): void
 export function provisionCloudAgent(config: string): Promise<string>
 export function messagesUpdateStatus(statusCode: string, uidsByConns: string): Promise<void>
+export function generatePublicInvitation(publicDid: string, label: string): string
 export function credentialCreateWithOffer(sourceId: string, offer: string): number
 export function credentialRelease(handle: number): void
 export function credentialSendRequest(handle: number, handleConnection: number): Promise<void>
 export function credentialDeclineOffer(handle: number, handleConnection: number, comment?: string | undefined | null): Promise<void>
 export function credentialSerialize(handle: number): string
 export function credentialDeserialize(data: string): number
-export function v2CredentialUpdateState(handleCredential: number, message: string | undefined | null, connectionHandle: number): Promise<number>
+export function v2CredentialUpdateStateWithMessage(handleCredential: number, message: string | undefined | null, connectionHandle: number): Promise<number>
+export function v2CredentialUpdateState(handleCredential: number, connectionHandle: number): Promise<number>
 export function credentialGetState(handle: number): number
 export function credentialGetOffers(handleConnection: number): Promise<string>
 export function credentialGetAttributes(handle: number): string
@@ -168,4 +170,3 @@ export function getVerkeyFromWallet(did: string): Promise<string>
 export function rotateVerkey(did: string): Promise<void>
 export function rotateVerkeyStart(did: string): Promise<string>
 export function rotateVerkeyApply(did: string, tempVk: string): Promise<void>
-export function generatePublicInvitation(publicDid: string, label: string): string

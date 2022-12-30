@@ -43,12 +43,22 @@ fn credential_deserialize(data: String) -> napi::Result<u32> {
 
 // todo: flip order of arguments
 #[napi]
-async fn v2_credential_update_state(
+async fn v2_credential_update_state_with_message(
     handle_credential: u32,
     message: Option<String>,
     connection_handle: u32,
 ) -> napi::Result<u32> {
     credential::update_state(handle_credential, message.as_deref(), connection_handle)
+        .await
+        .map_err(to_napi_err)
+}
+
+#[napi]
+async fn v2_credential_update_state(
+    handle_credential: u32,
+    connection_handle: u32,
+) -> napi::Result<u32> {
+    credential::update_state(handle_credential, None, connection_handle)
         .await
         .map_err(to_napi_err)
 }

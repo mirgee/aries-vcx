@@ -14,6 +14,13 @@ use vcx::serde_json::json;
 use crate::error::to_napi_err;
 
 #[napi]
+pub async fn update_webhook_url(webhook_url: String) -> napi::Result<()> {
+    agency_client::update_webhook_url(&webhook_url)
+        .await
+        .map_err(to_napi_err)
+}
+
+#[napi]
 pub fn create_agency_client_for_main_wallet(config: String) -> napi::Result<()> {
     let config = serde_json::from_str::<AgencyClientConfig>(&config)
         .map_err(|err| {

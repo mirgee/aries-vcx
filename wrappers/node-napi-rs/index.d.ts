@@ -6,6 +6,15 @@
 export function createAgencyClientForMainWallet(config: string): void
 export function provisionCloudAgent(config: string): Promise<string>
 export function messagesUpdateStatus(statusCode: string, uidsByConns: string): Promise<void>
+export function schemaDeserialize(serialized: string): number
+export function credentialdefCreateV2(sourceId: string, schemaId: string, tag: string, supportRevocation: boolean): Promise<number>
+export function credentialdefPublish(handle: number): Promise<void>
+export function credentialdefDeserialize(serialized: string): number
+export function credentialdefRelease(handle: number): void
+export function credentialdefSerialize(handle: number): string
+export function credentialdefGetCredDefId(handle: number): string
+export function credentialdefUpdateState(handle: number): Promise<number>
+export function credentialdefGetState(handle: number): number
 export function issuerCredentialDeserialize(credentialData: string): number
 export function issuerCredentialSerialize(handleCredential: number): string
 export function issuerCredentialUpdateStateV2(handleCredential: number, connectionHandle: number): Promise<number>
@@ -72,13 +81,14 @@ export function outOfBandSenderDeserialize(oobData: string): number
 export function outOfBandSenderRelease(handle: number): void
 export function openMainPool(poolConfig: string): Promise<void>
 export function closeMainPool(): Promise<void>
-export function enableMocks(): void
-export function shutdown(deleteAll?: boolean | undefined | null): void
-export function walletOpenAsMain(walletConfig: string): Promise<number>
-export function walletCreateMain(walletConfig: string): Promise<void>
-export function walletCloseMain(): Promise<void>
-export function vcxInitIssuerConfig(config: string): Promise<void>
-export function configureIssuerWallet(enterpriseSeed: string): Promise<string>
+export function revocationRegistryCreate(config: string): Promise<number>
+export function revocationRegistryPublish(handle: number, tailsUrl: string): Promise<number>
+export function revocationRegistryPublishRevocations(handle: number): Promise<void>
+export function revocationRegistryGetRevRegId(handle: number): string
+export function revocationRegistryGetTailsHash(handle: number): string
+export function revocationRegistrySerialize(handle: number): string
+export function revocationRegistryDeserialize(data: string): number
+export function revocationRegistryRelease(handle: number): void
 export function schemaGetAttributes(sourceId: string, schemaId: string): void
 export function schemaPrepareForEndorser(): void
 export function schemaCreate(sourceId: string, name: string, version: string, data: string): Promise<number>
@@ -88,20 +98,45 @@ export function schemaSerialize(handleSchema: number): string
 export function schemaRelease(handleSchema: number): void
 export function schemaUpdateState(handleSchema: number): Promise<number>
 export function schemaGetState(handleSchema: number): number
-export function schemaDeserialize(serialized: string): number
-export function credentialdefCreateV2(sourceId: string, schemaId: string, tag: string, supportRevocation: boolean): Promise<number>
-export function credentialdefPublish(handle: number): Promise<void>
-export function credentialdefDeserialize(serialized: string): number
-export function credentialdefRelease(handle: number): void
-export function credentialdefSerialize(handle: number): string
-export function credentialdefGetCredDefId(handle: number): string
-export function credentialdefUpdateState(handle: number): Promise<number>
-export function credentialdefGetState(handle: number): number
-export function revocationRegistryCreate(config: string): Promise<number>
-export function revocationRegistryPublish(handle: number, tailsUrl: string): Promise<number>
-export function revocationRegistryPublishRevocations(handle: number): Promise<void>
-export function revocationRegistryGetRevRegId(handle: number): string
-export function revocationRegistryGetTailsHash(handle: number): string
-export function revocationRegistrySerialize(handle: number): string
-export function revocationRegistryDeserialize(data: string): number
-export function revocationRegistryRelease(handle: number): void
+export function enableMocks(): void
+export function shutdown(deleteAll?: boolean | undefined | null): void
+export function walletOpenAsMain(walletConfig: string): Promise<number>
+export function walletCreateMain(walletConfig: string): Promise<void>
+export function walletCloseMain(): Promise<void>
+export function vcxInitIssuerConfig(config: string): Promise<void>
+export function configureIssuerWallet(enterpriseSeed: string): Promise<string>
+export function publicAgentCreate(sourceId: string, institutionDid: string): Promise<number>
+export function publicAgentDownloadConnectionRequests(handle: number, uids?: string | undefined | null): Promise<string>
+export function publicAgentDownloadMessage(handle: number, uid: string): Promise<string>
+export function publicAgentGetService(handle: number): string
+export function publicAgentSerialize(handle: number): string
+export function publicAgentDeserialize(data: string): number
+export function publicAgentRelease(handle: number): void
+export function credentialCreateWithOffer(sourceId: string, offer: string): number
+export function credentialRelease(handle: number): void
+export function credentialSendRequest(handle: number, handleConnection: number): Promise<void>
+export function credentialDeclineOffer(handle: number, handleConnection: number, comment?: string | undefined | null): Promise<void>
+export function credentialSerialize(handle: number): string
+export function credentialDeserialize(data: string): number
+export function v2CredentialUpdateState(handleCredential: number, message: string | undefined | null, connectionHandle: number): Promise<number>
+export function credentialGetState(handle: number): number
+export function credentialGetOffers(handleConnection: number): Promise<string>
+export function credentialGetAttributes(handle: number): string
+export function credentialGetAttachment(handle: number): string
+export function credentialGetTailsLocation(handle: number): string
+export function credentialGetTailsHash(handle: number): string
+export function credentialGetRevRegId(handle: number): string
+export function credentialGetThreadId(handle: number): string
+export function credentialCreateWithOffer(sourceId: string, offer: string): number
+export function proofCreate(sourceId: string, requestedAttrs: string, requestedPredicates: string, revocationDetails: string, name: string): Promise<number>
+export function getProofMsg(handle: number): string
+export function proofRelease(handle: number): void
+export function proofSendRequest(handleProof: number, handleConnection: number): Promise<void>
+export function proofGetRequestMsg(handle: number): string
+export function proofSerialize(handle: number): string
+export function proofDeserialize(data: string): number
+export function v2ProofUpdateState(handleProof: number, connectionHandle: number): Promise<number>
+export function v2ProofUpdateStateWithMessage(handleProof: number, message: string, connectionHandle: number): Promise<number>
+export function proofGetState(handle: number): number
+export function proofGetThreadId(handle: number): Promise<string>
+export function markPresentationRequestMsgSent(handle: number): string

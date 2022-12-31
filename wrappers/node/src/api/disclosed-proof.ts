@@ -1,6 +1,6 @@
 import { ISerializedData, ProverStateType } from './common';
 import { Connection } from './mediated-connection';
-import { VCXBaseWithState1 } from './vcx-base-with-state-1';
+import { VcxBaseWithState } from './vcx-base-with-state';
 import * as ffi from '../../../node-napi-rs';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 
@@ -52,7 +52,7 @@ export interface IDeclinePresentationRequestData {
   proposal?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-export class DisclosedProof extends VCXBaseWithState1<IDisclosedProofData, ProverStateType> {
+export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, ProverStateType> {
   public static create({ sourceId, request }: IDisclosedProofCreateData): DisclosedProof {
     try {
       const disclosedProof = new DisclosedProof(sourceId);

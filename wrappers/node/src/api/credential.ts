@@ -1,7 +1,7 @@
 import * as ffi from 'node-napi-rs';
 import { ISerializedData, HolderStateType } from './common';
 import { Connection } from './mediated-connection';
-import { VCXBaseWithState1 } from './vcx-base-with-state-1';
+import { VcxBaseWithState } from './vcx-base-with-state';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 
 export interface ICredentialStructData {
@@ -21,7 +21,7 @@ export interface ICredentialSendData {
   connection: Connection;
 }
 
-export class Credential extends VCXBaseWithState1<ICredentialStructData, HolderStateType> {
+export class Credential extends VcxBaseWithState<ICredentialStructData, HolderStateType> {
   public static create({ sourceId, offer }: ICredentialCreateWithOffer): Credential {
     try {
       const credential = new Credential(sourceId);
@@ -33,10 +33,10 @@ export class Credential extends VCXBaseWithState1<ICredentialStructData, HolderS
     }
   }
 
-  public static async deserialize(
+  public static deserialize(
     credentialData: ISerializedData<ICredentialStructData>,
-  ): Promise<Credential> {
-    const credential = await super._deserialize<Credential>(Credential, credentialData);
+  ): Credential {
+    const credential = super._deserialize<Credential>(Credential, credentialData);
     return credential;
   }
 

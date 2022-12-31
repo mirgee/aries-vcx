@@ -1,8 +1,6 @@
 import { VCXCode } from './api/common';
 import { errorMessage } from './utils/error-message';
 
-export class ConnectionTimeoutError extends Error {}
-
 export class VCXInternalError extends Error {
   public readonly vcxCode: number;
   public readonly inheritedStackTraces: string[] = [];

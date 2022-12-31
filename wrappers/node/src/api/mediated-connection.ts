@@ -2,7 +2,7 @@ import * as ffiNapi from 'node-napi-rs';
 import * as ref from 'ref-napi';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 import { ISerializedData, ConnectionStateType } from './common';
-import { VCXBaseWithState1 } from './vcx-base-with-state';
+import { VcxBaseWithState } from './vcx-base-with-state';
 import { IPwInfo } from './utils';
 
 export interface IConnectionData {
@@ -144,7 +144,7 @@ export function generatePublicInvite(public_did: string, label: string): string 
   }
 }
 
-export class Connection extends VCXBaseWithState1<IConnectionData, ConnectionStateType> {
+export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStateType> {
   public static async create({ id }: IConnectionCreateData): Promise<Connection> {
     try {
       const connection = new Connection(id);

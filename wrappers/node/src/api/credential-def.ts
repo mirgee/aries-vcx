@@ -1,7 +1,7 @@
 import * as ffi from 'node-napi-rs';
 import { VCXInternalError } from '../errors';
 import { ISerializedData } from './common';
-import { VcxBaseNapirs } from './vcx-base-napirs';
+import { VcxBase } from './vcx-base-napirs';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 
 export interface ICredentialDefCreateDataV2 {
@@ -43,7 +43,7 @@ export enum CredentialDefState {
   Published = 1,
 }
 
-export class CredentialDef extends VcxBaseNapirs<ICredentialDefData> {
+export class CredentialDef extends VcxBase<ICredentialDefData> {
   public static async create({
     supportRevocation,
     schemaId,
@@ -60,9 +60,9 @@ export class CredentialDef extends VcxBaseNapirs<ICredentialDefData> {
     }
   }
 
-  public static async deserialize(
+  public static deserialize(
     credentialDef: ISerializedData<ICredentialDefData>,
-  ): Promise<CredentialDef> {
+  ): CredentialDef {
     const {
       data: { name },
     } = credentialDef;

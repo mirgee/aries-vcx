@@ -1,6 +1,6 @@
 import * as ffi from 'node-napi-rs';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
-import { VcxBaseNapirs } from './vcx-base-napirs';
+import { VcxBase } from './vcx-base-napirs';
 import { ISerializedData } from './common';
 
 export interface IOOBSerializedData {
@@ -34,7 +34,7 @@ export enum HandshakeProtocol {
   DidExchangeV1 = 'DidExchangeV1',
 }
 
-export class OutOfBandSender extends VcxBaseNapirs<IOOBSerializedData> {
+export class OutOfBandSender extends VcxBase<IOOBSerializedData> {
   public static async create(config: IOOBCreateData): Promise<OutOfBandSender> {
     const oob = new OutOfBandSender(config.source_id);
     try {

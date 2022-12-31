@@ -1,6 +1,6 @@
 import * as ffi from 'node-napi-rs';
 import { ISerializedData } from './common';
-import { VcxBaseNapirs } from './vcx-base-napirs';
+import { VcxBase } from './vcx-base-napirs';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 
 export interface IRevocationRegistryData {
@@ -25,7 +25,7 @@ export interface IRevocationRegistryConfig {
   maxCreds: number;
 }
 
-export class RevocationRegistry extends VcxBaseNapirs<IRevocationRegistryData> {
+export class RevocationRegistry extends VcxBase<IRevocationRegistryData> {
   public static async create(config: IRevocationRegistryConfig): Promise<RevocationRegistry> {
     try {
       const revReg = new RevocationRegistry('');
@@ -44,9 +44,9 @@ export class RevocationRegistry extends VcxBaseNapirs<IRevocationRegistryData> {
     }
   }
 
-  public static async deserialize(
+  public static deserialize(
     data: ISerializedData<IRevocationRegistryData>,
-  ): Promise<RevocationRegistry> {
+  ): RevocationRegistry {
     const newObj = { ...data, source_id: 'foo' };
     return super._deserialize(RevocationRegistry, newObj);
   }

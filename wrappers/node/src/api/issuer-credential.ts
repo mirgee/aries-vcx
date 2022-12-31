@@ -3,7 +3,7 @@ import { ISerializedData, IssuerStateType } from './common';
 import { Connection } from './mediated-connection';
 import { CredentialDef } from './credential-def';
 import { RevocationRegistry } from './revocation-registry';
-import { VCXBaseWithState1 } from './vcx-base-with-state-1';
+import { VcxBaseWithState } from './vcx-base-with-state';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 
 export interface IIssuerCredentialBuildOfferDataV2 {
@@ -28,7 +28,7 @@ export interface IIssuerCredentialData {
 /**
  * A Credential created by the issuing party (institution)
  */
-export class IssuerCredential extends VCXBaseWithState1<IIssuerCredentialData, IssuerStateType> {
+export class IssuerCredential extends VcxBaseWithState<IIssuerCredentialData, IssuerStateType> {
   public static async create(sourceId: string): Promise<IssuerCredential> {
     try {
       const connection = new IssuerCredential(sourceId);

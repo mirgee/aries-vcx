@@ -2,10 +2,10 @@ import * as ffi from 'node-napi-rs';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 import { IOOBSerializedData } from './out-of-band-sender';
 import { Connection } from './mediated-connection';
-import { VcxBaseNapirs } from './vcx-base-napirs';
+import { VcxBase } from './vcx-base-napirs';
 import { ISerializedData } from './common';
 
-export class OutOfBandReceiver extends VcxBaseNapirs<IOOBSerializedData> {
+export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
   public static createWithMessage(msg: string): OutOfBandReceiver {
     const oob = new OutOfBandReceiver("");
     try {

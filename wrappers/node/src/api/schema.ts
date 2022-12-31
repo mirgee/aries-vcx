@@ -1,6 +1,6 @@
 import * as ffi from 'node-napi-rs';
 import { ISerializedData } from './common';
-import { VcxBaseNapirs } from './vcx-base-napirs';
+import { VcxBase } from './vcx-base-napirs';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 
 /**
@@ -62,7 +62,7 @@ export enum SchemaState {
   Published = 1,
 }
 
-export class Schema extends VcxBaseNapirs<ISchemaSerializedData> {
+export class Schema extends VcxBase<ISchemaSerializedData> {
   get schemaAttrs(): ISchemaAttrs {
     return this._schemaAttrs;
   }
@@ -92,7 +92,7 @@ export class Schema extends VcxBaseNapirs<ISchemaSerializedData> {
     }
   }
 
-  public static async deserialize(schema: ISerializedData<ISchemaSerializedData>): Promise<Schema> {
+  public static deserialize(schema: ISerializedData<ISchemaSerializedData>): Schema {
     const {
       data: { name, schema_id, version, data },
     } = schema;

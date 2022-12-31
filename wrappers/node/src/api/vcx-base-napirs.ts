@@ -1,10 +1,10 @@
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 import { ISerializedData } from './common';
 
-export abstract class VcxBaseNapirs<SerializedData> {
+export abstract class VcxBase<SerializedData> {
   private _handleRef!: number;
 
-  protected static _deserialize<T extends VcxBaseNapirs<unknown>, P = unknown>(
+  protected static _deserialize<T extends VcxBase<unknown>, P = unknown>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     VCXClass: new (sourceId: string, args?: any) => T,
     objData: ISerializedData<{ source_id: string }>,

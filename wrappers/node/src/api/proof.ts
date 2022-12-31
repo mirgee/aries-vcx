@@ -1,7 +1,7 @@
 import * as ffi from '../../../node-napi-rs';
 import { ISerializedData, VerifierStateType } from './common';
 import { Connection } from './mediated-connection';
-import { VCXBaseWithState1 } from './vcx-base-with-state-1';
+import { VcxBaseWithState } from './vcx-base-with-state';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 
 export interface IProofCreateData {
@@ -84,7 +84,7 @@ export interface IRevocationInterval {
   to?: number;
 }
 
-export class Proof extends VCXBaseWithState1<IProofData, VerifierStateType> {
+export class Proof extends VcxBaseWithState<IProofData, VerifierStateType> {
   public static async create({ sourceId, ...createDataRest }: IProofCreateData): Promise<Proof> {
     try {
       const proof = new Proof(sourceId);
@@ -102,26 +102,9 @@ export class Proof extends VCXBaseWithState1<IProofData, VerifierStateType> {
     }
   }
 
-  public static async deserialize(proofData: ISerializedData<IProofData>): Promise<Proof> {
-    const params: IProofConstructorData = (() => {
-      // todo: clean up this historic piece, we go thin philosophy in wrapper
-      switch (proofData.version) {
-        case '1.0':
-          return Proof.getParams(proofData);
-        case '2.0':
-          return { attrs: [{ name: '' }], preds: [], name: '' };
-        case '3.0':
-          return Proof.getParams(proofData);
-        default:
-          throw Error(
-            `Unsupported version provided in serialized proof data: ${JSON.stringify(
-              proofData.version,
-            )}`,
-          );
-      }
-    })();
+  public static deserialize(proofData: ISerializedData<IProofData>): Proof {
     try {
-      return super._deserialize<Proof, IProofConstructorData>(Proof, proofData, params);
+      return super._deserialize<Proof, IProofConstructorData>(Proof, proofData);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
@@ -156,7 +139,7 @@ export class Proof extends VCXBaseWithState1<IProofData, VerifierStateType> {
 
   public async requestProof(connection: Connection): Promise<void> {
     try {
-      return ffi.proofSendRequest(this.handle, connection.handle);
+      return await ffi.proofSendRequest(this.handle, connection.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }

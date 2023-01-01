@@ -10,3 +10,4 @@ pub fn shutdown(delete_all: Option<bool>) -> ::napi::Result<()> {
     state_vcx_shutdown(delete_all.unwrap_or(false));
     Ok(())
 }
+

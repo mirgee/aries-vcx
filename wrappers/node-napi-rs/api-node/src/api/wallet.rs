@@ -12,7 +12,7 @@ use crate::error::to_napi_err;
 #[napi]
 pub async fn wallet_open_as_main(wallet_config: String) -> napi::Result<i32> {
     let wallet_config = serde_json::from_str::<WalletConfig>(&wallet_config)
-        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Serialization error: {:?}", err)))
+        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidConfiguration, format!("Serialization error: {:?}", err)))
         .map_err(to_napi_err)?;
     let handle = wallet::open_as_main_wallet(&wallet_config).await.map_err(to_napi_err)?;
     Ok(handle.0)
@@ -21,7 +21,7 @@ pub async fn wallet_open_as_main(wallet_config: String) -> napi::Result<i32> {
 #[napi]
 pub async fn wallet_create_main(wallet_config: String) -> napi::Result<()> {
     let wallet_config = serde_json::from_str::<WalletConfig>(&wallet_config)
-        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Serialization error: {:?}", err)))
+        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidConfiguration, format!("Serialization error: {:?}", err)))
         .map_err(to_napi_err)?;
     wallet::create_main_wallet(&wallet_config).await.map_err(to_napi_err)
 }
@@ -34,7 +34,7 @@ pub async fn wallet_close_main() -> napi::Result<()> {
 #[napi]
 pub async fn vcx_init_issuer_config(config: String) -> napi::Result<()> {
     let config = serde_json::from_str::<IssuerConfig>(&config)
-        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Serialization error: {:?}", err)))
+        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidConfiguration, format!("Serialization error: {:?}", err)))
         .map_err(to_napi_err)?;
     settings_init_issuer_config(&config).map_err(to_napi_err)
 }
@@ -64,7 +64,7 @@ pub async fn create_pairwise_info() -> napi::Result<String> {
 #[napi]
 pub async fn wallet_import(config: String) -> napi::Result<()> {
     let config = serde_json::from_str::<RestoreWalletConfigs>(&config)
-        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidJson, format!("Serialization error: {:?}", err)))
+        .map_err(|err| LibvcxError::from_msg(LibvcxErrorKind::InvalidConfiguration, format!("Serialization error: {:?}", err)))
         .map_err(to_napi_err)?;
     wallet::wallet_import(&config).await.map_err(to_napi_err)
 }

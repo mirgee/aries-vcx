@@ -25,7 +25,7 @@ pub fn create_agency_client_for_main_wallet(config: String) -> napi::Result<()> 
     let config = serde_json::from_str::<AgencyClientConfig>(&config)
         .map_err(|err| {
             LibvcxError::from_msg(
-                LibvcxErrorKind::InvalidJson,
+                LibvcxErrorKind::InvalidConfiguration,
                 format!("Deserialization error parsing config: {:?}", err),
             )
         })
@@ -39,7 +39,7 @@ pub async fn provision_cloud_agent(config: String) -> napi::Result<String> {
     let config = serde_json::from_str::<AgentProvisionConfig>(&config)
         .map_err(|err| {
             LibvcxError::from_msg(
-                LibvcxErrorKind::InvalidJson,
+                LibvcxErrorKind::InvalidConfiguration,
                 format!("Deserialization error parsing config: {:?}", err),
             )
         })
@@ -56,7 +56,7 @@ pub async fn messages_update_status(status_code: String, uids_by_conns: String) 
     let status_code: MessageStatusCode = serde_json::from_str(&format!("\"{}\"", status_code))
         .map_err(|err| {
             LibvcxError::from_msg(
-                LibvcxErrorKind::InvalidJson,
+                LibvcxErrorKind::InvalidConfiguration,
                 format!("Deserialization error parsing status_code: {:?}", err),
             )
         })
@@ -64,7 +64,7 @@ pub async fn messages_update_status(status_code: String, uids_by_conns: String) 
     let uids_by_conns: Vec<UIDsByConn> = serde_json::from_str(&uids_by_conns)
         .map_err(|err| {
             LibvcxError::from_msg(
-                LibvcxErrorKind::InvalidJson,
+                LibvcxErrorKind::InvalidConfiguration,
                 format!("Deserialization error parsing uids_by_conns: {:?}", err),
             )
         })

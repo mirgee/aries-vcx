@@ -71,7 +71,7 @@
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
     "lint-fix": "npm run lint -- --fix",
     "jslint:fix": "standard --fix",
-    "test": "npm run test:connection && npm run test:credentialDef && npm run test:credential && npm run test:disclosedProof && npm run test:issuerCredential && npm run test:proof && npm run test:oob && npm run test:schema && npm run test:utils && npm run test:wallet && npm run test:ffi",
+    "test": "npm run test:connection && npm run test:credentialDef && npm run test:credential && npm run test:disclosedProof && npm run test:issuerCredential && npm run test:proof && npm run test:oob && npm run test:schema && npm run test:utils && npm run test:wallet",
     "test:connection": "      TS_NODE_PROJECT=./test/tsconfig.json NODE_ENV=test RUST_BACKTRACE=full ./node_modules/.bin/mocha --timeout 60000 --v8-expose-gc --v8-use-strict --exit --recursive --require ts-node/register test/suite1/ariesvcx-mediated-connection.test.ts",
     "test:credentialDef": "   TS_NODE_PROJECT=./test/tsconfig.json NODE_ENV=test RUST_BACKTRACE=full ./node_modules/.bin/mocha --timeout 60000 --v8-expose-gc --v8-use-strict --exit --recursive --require ts-node/register ./test/suite1/ariesvcx-credential-def.test.ts",
     "test:credential": "      TS_NODE_PROJECT=./test/tsconfig.json NODE_ENV=test RUST_BACKTRACE=full ./node_modules/.bin/mocha --timeout 60000 --v8-expose-gc --v8-use-strict --exit --recursive --require ts-node/register ./test/suite1/ariesvcx-credential.test.ts",
@@ -81,8 +81,7 @@
     "test:schema": "          TS_NODE_PROJECT=./test/tsconfig.json NODE_ENV=test RUST_BACKTRACE=full ./node_modules/.bin/mocha --timeout 60000 --v8-expose-gc --v8-use-strict --exit --recursive --require ts-node/register ./test/suite1/ariesvcx-schema.test.ts",
     "test:utils": "           TS_NODE_PROJECT=./test/tsconfig.json NODE_ENV=test RUST_BACKTRACE=full ./node_modules/.bin/mocha --timeout 60000 --v8-expose-gc --v8-use-strict --exit --recursive --require ts-node/register ./test/suite1/ariesvcx-utils.test.ts",
     "test:oob": "             TS_NODE_PROJECT=./test/tsconfig.json NODE_ENV=test RUST_BACKTRACE=full ./node_modules/.bin/mocha --timeout 60000 --v8-expose-gc --v8-use-strict --exit --recursive --require ts-node/register ./test/suite1/ariesvcx-oob.test.ts",
-    "test:wallet": "          TS_NODE_PROJECT=./test/tsconfig.json NODE_ENV=test RUST_BACKTRACE=full ./node_modules/.bin/mocha --timeout 60000 --v8-expose-gc --v8-use-strict --exit --recursive --require ts-node/register ./test/suite1/ariesvcx-wallet.test.ts",
-    "test:ffi": "             TS_NODE_PROJECT=./test/tsconfig.json NODE_ENV=test RUST_BACKTRACE=full ./node_modules/.bin/mocha --timeout 60000 --v8-expose-gc --v8-use-strict --exit --recursive --require ts-node/register ./test/suite2/ffi.test.ts"
+    "test:wallet": "          TS_NODE_PROJECT=./test/tsconfig.json NODE_ENV=test RUST_BACKTRACE=full ./node_modules/.bin/mocha --timeout 60000 --v8-expose-gc --v8-use-strict --exit --recursive --require ts-node/register ./test/suite1/ariesvcx-wallet.test.ts"
   },
   "main": "dist/index.js",
   "typings": "dist/index.d.ts"

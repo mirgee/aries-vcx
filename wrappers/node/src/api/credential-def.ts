@@ -1,5 +1,4 @@
 import * as ffi from 'node-napi-rs';
-import { VCXInternalError } from '../errors';
 import { ISerializedData } from './common';
 import { VcxBase } from './vcx-base-napirs';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
@@ -56,7 +55,7 @@ export class CredentialDef extends VcxBase<ICredentialDefData> {
       credentialDef._setHandle(handle);
       return credentialDef;
     } catch (err: any) {
-      throw new VCXInternalError(err);
+      throw new VCXInternalErrorNapirs(err);
     }
   }
 

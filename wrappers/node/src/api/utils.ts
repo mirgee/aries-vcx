@@ -1,12 +1,7 @@
-import { Callback } from 'ffi-napi';
 import * as ffiNapi from 'node-napi-rs';
-import { VCXInternalError } from '../errors';
 import { rustAPI } from '../rustlib';
-import { IConnectionDownloadAllMessages } from './mediated-connection';
-import { createFFICallbackPromise } from '../utils/ffi-helpers';
-import * as ref from 'ref-napi';
-import * as ffi from '../../../node-napi-rs';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
+import * as ffi from '../../../node-napi-rs';
 
 export interface IPwInfo {
   pw_did: string;
@@ -46,33 +41,10 @@ export function getVersion(): string {
 }
 
 export async function getLedgerAuthorAgreement(): Promise<string> {
-  /**
-   * Retrieve author agreement set on the sovrin network
-   */
   try {
-    const agreement = await createFFICallbackPromise<string>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_get_ledger_author_agreement(0, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback(
-          'void',
-          ['uint32', 'uint32', 'string'],
-          (xhandle: number, err: number, agreement: string) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(agreement);
-          },
-        ),
-    );
-    return agreement;
+    return await ffi.getLedgerAuthorAgreement();
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
@@ -80,27 +52,27 @@ export function setActiveTxnAuthorAgreementMeta(
   text: string | null | undefined,
   version: string | null | undefined,
   hash: string | null | undefined,
-  acc_mech_type: string,
-  time_of_acceptance: number,
-): number {
-  /**
-   * Set some accepted agreement as active.
-   * As result of successful call of this function appropriate metadata will be appended to each write request.
-   */
-  return rustAPI().vcx_set_active_txn_author_agreement_meta(
-    text,
-    version,
-    hash,
-    acc_mech_type,
-    time_of_acceptance,
-  );
+  acceptanceMechanismType: string,
+  timeOfAcceptance: number,
+): void {
+  try {
+    ffi.setActiveTxnAuthorAgreementMeta(
+      text,
+      version,
+      hash,
+      acceptanceMechanismType,
+      timeOfAcceptance,
+    );
+  } catch (err: any) {
+    throw new VCXInternalErrorNapirs(err);
+  }
 }
 
 export function shutdownVcx(deleteWallet: boolean): void {
   try {
     ffiNapi.shutdown(deleteWallet);
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
@@ -110,24 +82,9 @@ export interface IUpdateWebhookUrl {
 
 export async function vcxUpdateWebhookUrl({ webhookUrl }: IUpdateWebhookUrl): Promise<void> {
   try {
-    return await createFFICallbackPromise<void>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_update_webhook_url(0, webhookUrl, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback('void', ['uint32', 'uint32'], (xhandle: number, err: number) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        }),
-    );
+    await ffi.updateWebhookUrl(webhookUrl);
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
@@ -145,274 +102,85 @@ export async function updateMessages(updateConfig: IUpdateMessagesConfigs): Prom
 
 export async function rotateVerkey(did: string): Promise<void> {
   try {
-    return await createFFICallbackPromise<void>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_rotate_verkey(0, did, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback('void', ['uint32', 'uint32'], (xhandle: number, err: number) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        }),
-    );
+    await ffi.rotateVerkey(did);
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
 export async function rotateVerkeyStart(did: string): Promise<string> {
   try {
-    return await createFFICallbackPromise<string>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_rotate_verkey_start(0, did, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback(
-          'string',
-          ['uint32', 'uint32', 'string'],
-          (xhandle: number, err: number, tempVk: string) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(tempVk);
-          },
-        ),
-    );
+    return await ffi.rotateVerkeyStart(did);
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
 export async function rotateVerkeyApply(did: string, tempVk: string): Promise<void> {
   try {
-    return await createFFICallbackPromise<void>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_rotate_verkey_apply(0, did, tempVk, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback('string', ['uint32', 'uint32'], (xhandle: number, err: number) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        }),
-    );
+    await ffi.rotateVerkeyApply(did, tempVk);
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
 export async function getVerkeyFromWallet(did: string): Promise<string> {
   try {
-    return await createFFICallbackPromise<string>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_get_verkey_from_wallet(0, did, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback(
-          'void',
-          ['uint32', 'uint32', 'string'],
-          (xhandle: number, err: number, vk: string) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(vk);
-          },
-        ),
-    );
+    return await ffi.getVerkeyFromWallet(did);
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
 export async function getVerkeyFromLedger(did: string): Promise<string> {
   try {
-    return await createFFICallbackPromise<string>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_get_verkey_from_ledger(0, did, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback(
-          'void',
-          ['uint32', 'uint32', 'string'],
-          (xhandle: number, err: number, vk: string) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(vk);
-          },
-        ),
-    );
+    return await ffi.getVerkeyFromLedger(did);
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
 export async function getLedgerTxn(did: string, seqNo: number): Promise<string> {
   try {
-    return await createFFICallbackPromise<string>(
-      (resolve, reject, cb) => {
-        const rc = rustAPI().vcx_get_ledger_txn(0, did, seqNo, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback(
-          'void',
-          ['uint32', 'uint32', 'string'],
-          (xhandle: number, err: number, txn: string) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(txn);
-          },
-        ),
-    );
+    return await ffi.getLedgerTxn(seqNo, did);
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
 export async function createPwInfo(): Promise<IPwInfo> {
   try {
-    return await createFFICallbackPromise<IPwInfo>(
-      (_resolve, reject, cb) => {
-        const rc = rustAPI().vcx_create_pairwise_info(0, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback(
-          'void',
-          ['uint32', 'uint32', 'string'],
-          (_xhandle: number, err: number, pwInfo: string) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(JSON.parse(pwInfo));
-          },
-        ),
-    );
+    return JSON.parse(await ffi.createPairwiseInfo());
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
 export async function createService(
-  did: string,
+  target_did: string,
   endpoint: string,
   recipientKeys: string[],
   routingKeys: string[],
 ): Promise<IAriesService> {
   try {
-    return await createFFICallbackPromise<IAriesService>(
-      (_resolve, reject, cb) => {
-        const rc = rustAPI().vcx_create_service(
-          0,
-          did,
-          endpoint,
-          JSON.stringify(recipientKeys),
-          JSON.stringify(routingKeys),
-          cb,
-        );
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback(
-          'void',
-          ['uint32', 'uint32', 'string'],
-          (_xhandle: number, err: number, service: string) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(JSON.parse(service));
-          },
-        ),
-    );
+    return JSON.parse(await ffi.createService(target_did, recipientKeys, routingKeys, endpoint));
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
 export async function getServiceFromLedger(did: string): Promise<IAriesService> {
   try {
-    return await createFFICallbackPromise<IAriesService>(
-      (_resolve, reject, cb) => {
-        const rc = rustAPI().vcx_get_service_from_ledger(0, did, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback(
-          'void',
-          ['uint32', 'uint32', 'string'],
-          (_xhandle: number, err: number, service: string) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(JSON.parse(service));
-          },
-        ),
-    );
+    return JSON.parse(await ffi.getServiceFromLedger(did));
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }
 
-export async function unpack(payload: Buffer): Promise<IMsgUnpacked> {
+export async function unpack(data: Buffer): Promise<IMsgUnpacked> {
   try {
-    return await createFFICallbackPromise<IMsgUnpacked>(
-      (_resolve, reject, cb) => {
-        const rc = rustAPI().vcx_unpack(0, ref.address(payload), payload.length, cb);
-        if (rc) {
-          reject(rc);
-        }
-      },
-      (resolve, reject) =>
-        Callback(
-          'void',
-          ['uint32', 'uint32', 'string'],
-          (_xhandle: number, err: number, decryptedPayload: string) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(JSON.parse(decryptedPayload));
-          },
-        ),
-    );
+    return JSON.parse(await ffi.unpack(data));
   } catch (err: any) {
-    throw new VCXInternalError(err);
+    throw new VCXInternalErrorNapirs(err);
   }
 }

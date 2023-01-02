@@ -158,6 +158,7 @@ export function schemaUpdateState(handleSchema: number): Promise<number>
 export function schemaGetState(handleSchema: number): number
 export function enableMocks(): void
 export function shutdown(deleteAll?: boolean | undefined | null): void
+export function getVersion(): string
 export function walletOpenAsMain(walletConfig: string): Promise<number>
 export function walletCreateMain(walletConfig: string): Promise<void>
 export function walletCloseMain(): Promise<void>

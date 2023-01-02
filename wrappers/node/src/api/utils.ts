@@ -1,5 +1,4 @@
 import * as ffiNapi from 'node-napi-rs';
-import { rustAPI } from '../rustlib';
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 import * as ffi from '../../../node-napi-rs';
 
@@ -37,7 +36,11 @@ export interface PtrBuffer extends Buffer {
 }
 
 export function getVersion(): string {
-  return rustAPI().vcx_version();
+    try {
+        return ffi.getVersion();
+    } catch (err: any) {
+        throw new VCXInternalErrorNapirs(err);
+    }
 }
 
 export async function getLedgerAuthorAgreement(): Promise<string> {

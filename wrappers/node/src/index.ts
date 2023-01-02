@@ -15,5 +15,5 @@ export * from './api/out-of-band-sender';
 export * from './api/out-of-band-receiver';
 export * from './vcx';
 export * from './rustlib';
-export * from './errors';
+export * from './errors-napirs';
 export * from './api/logging';

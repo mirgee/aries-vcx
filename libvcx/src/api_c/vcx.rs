@@ -7,6 +7,7 @@ use aries_vcx::agency_client::configuration::AgencyClientConfig;
 
 use aries_vcx::indy::ledger::pool::PoolConfig;
 use aries_vcx::indy::wallet::IssuerConfig;
+use crate::api_vcx::utils::version_constants;
 
 use crate::api_c::types::CommandHandle;
 use crate::api_vcx::api_global::agency_client::update_webhook_url;

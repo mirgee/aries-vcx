@@ -1,7 +1,7 @@
 import * as ffi from 'node-napi-rs';
 import { ISerializedData } from './common';
-import { VcxBase } from './vcx-base-napirs';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VcxBase } from './vcx-base';
+import { VCXInternalError } from '../errors';
 
 /**
  * @interface Interface that represents the parameters for `Schema.create` function.
@@ -88,7 +88,7 @@ export class Schema extends VcxBase<ISchemaSerializedData> {
       schema._schemaId = ffi.schemaGetSchemaId(handle);
       return schema;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -122,23 +122,23 @@ export class Schema extends VcxBase<ISchemaSerializedData> {
     try {
       await ffi.schemaUpdateState(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async getState(): Promise<SchemaState> {
+  public getState(): SchemaState {
     try {
       return ffi.schemaGetState(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  protected async getSchemaId(): Promise<string> {
+  protected getSchemaId(): string {
     try {
       return ffi.schemaGetSchemaId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 

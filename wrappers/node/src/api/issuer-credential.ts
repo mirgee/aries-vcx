@@ -4,7 +4,7 @@ import { Connection } from './mediated-connection';
 import { CredentialDef } from './credential-def';
 import { RevocationRegistry } from './revocation-registry';
 import { VcxBaseWithState } from './vcx-base-with-state';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VCXInternalError } from '../errors';
 
 export interface IIssuerCredentialBuildOfferDataV2 {
   credDef: CredentialDef;
@@ -35,7 +35,7 @@ export class IssuerCredential extends VcxBaseWithState<IIssuerCredentialData, Is
       connection._setHandle(await ffi.issuerCredentialCreate(sourceId));
       return connection;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -45,7 +45,7 @@ export class IssuerCredential extends VcxBaseWithState<IIssuerCredentialData, Is
     try {
       return super._deserialize(IssuerCredential, serializedData);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -67,7 +67,7 @@ export class IssuerCredential extends VcxBaseWithState<IIssuerCredentialData, Is
         message,
       );
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -75,7 +75,7 @@ export class IssuerCredential extends VcxBaseWithState<IIssuerCredentialData, Is
     try {
       return await ffi.issuerCredentialSendOfferV2(this.handle, connection.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -83,7 +83,7 @@ export class IssuerCredential extends VcxBaseWithState<IIssuerCredentialData, Is
     try {
       return await ffi.issuerCredentialMarkOfferMsgSent(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -102,23 +102,23 @@ export class IssuerCredential extends VcxBaseWithState<IIssuerCredentialData, Is
         comment || '',
       );
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async getCredentialOfferMsg(): Promise<string> {
+  public getCredentialOfferMsg(): string {
     try {
-      return await ffi.issuerCredentialGetOfferMsg(this.handle);
+      return ffi.issuerCredentialGetOfferMsg(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async getThreadId(): Promise<string> {
+  public getThreadId(): string {
     try {
-      return await ffi.issuerCredentialGetThreadId(this.handle);
+      return ffi.issuerCredentialGetThreadId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -126,35 +126,31 @@ export class IssuerCredential extends VcxBaseWithState<IIssuerCredentialData, Is
     try {
       return await ffi.issuerCredentialSendCredential(this.handle, connection.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async getCredentialMsg(_myPwDid: string): Promise<string> {
-    throw Error('Unimplemented');
-  }
-
-  public async revokeCredentialLocal(): Promise<void> {
+  public async revokeCredentialLocal() {
     try {
       return await ffi.issuerCredentialRevokeLocal(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async isRevokable(): Promise<boolean> {
+  public isRevokable(): boolean {
     try {
-      return await ffi.issuerCredentialIsRevokable(this.handle);
+      return ffi.issuerCredentialIsRevokable(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async getRevRegId(): Promise<string> {
+  public getRevRegId(): string {
     try {
-      return await ffi.issuerCredentialGetRevRegId(this.handle);
+      return ffi.issuerCredentialGetRevRegId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 

@@ -1,8 +1,8 @@
 import * as ffi from 'node-napi-rs';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VCXInternalError } from '../errors';
 import { IOOBSerializedData } from './out-of-band-sender';
 import { Connection } from './mediated-connection';
-import { VcxBase } from './vcx-base-napirs';
+import { VcxBase } from './vcx-base';
 import { ISerializedData } from './common';
 
 export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
@@ -12,7 +12,7 @@ export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
       oob._setHandle(ffi.outOfBandReceiverCreate(msg));
       return oob;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -21,7 +21,7 @@ export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
     try {
       return super._deserialize(OutOfBandReceiver, newObj);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -29,7 +29,7 @@ export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
     try {
       return ffi.outOfBandReceiverExtractMessage(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -39,7 +39,7 @@ export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
       const connHandle = await ffi.outOfBandReceiverConnectionExists(this.handle, connHandles);
       return connections.find((conn) => conn.handle === connHandle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -48,7 +48,7 @@ export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
       const connection = await ffi.outOfBandReceiverBuildConnection(this.handle);
       return Connection.deserialize(JSON.parse(connection));
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -56,7 +56,7 @@ export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
     try {
       return ffi.outOfBandReceiverGetThreadId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 

@@ -88,7 +88,7 @@ fn proof_get_state(handle: u32) -> napi::Result<u32> {
 }
 
 #[napi]
-async fn proof_get_thread_id(handle: u32) -> napi::Result<String> {
+fn proof_get_thread_id(handle: u32) -> napi::Result<String> {
     proof::get_thread_id(handle).map_err(to_napi_err)
 }
 

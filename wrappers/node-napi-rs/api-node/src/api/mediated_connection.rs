@@ -206,15 +206,13 @@ pub async fn mediated_connection_messages_download(
 
 #[napi]
 pub async fn mediated_connection_sign_data(handle: u32, data: Buffer) -> napi::Result<Buffer> {
-    let vk = mediated_connection::get_pw_verkey(handle).map_err(to_napi_err)?;
-    let res = wallet_sign(&vk, &data.to_vec()).await.map_err(to_napi_err)?;
+    let res = mediated_connection::sign_data(handle, &data.to_vec()).await.map_err(to_napi_err)?;
     Ok(Buffer::from(res))
 }
 
 #[napi]
 pub async fn mediated_connection_verify_signature(handle: u32, data: Buffer, signature: Buffer) -> napi::Result<bool> {
-    let vk = mediated_connection::get_pw_verkey(handle).map_err(to_napi_err)?;
-    wallet_verify(&vk, &data.to_vec(), &signature.to_vec())
+    mediated_connection::verify_signature(handle, &data.to_vec(), &signature.to_vec())
         .await
         .map_err(to_napi_err)
 }

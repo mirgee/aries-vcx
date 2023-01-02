@@ -1,6 +1,6 @@
 import * as ffi from 'node-napi-rs';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
-import { VcxBase } from './vcx-base-napirs';
+import { VCXInternalError } from '../errors';
+import { VcxBase } from './vcx-base';
 import { ISerializedData } from './common';
 
 export interface IOOBSerializedData {
@@ -35,13 +35,13 @@ export enum HandshakeProtocol {
 }
 
 export class OutOfBandSender extends VcxBase<IOOBSerializedData> {
-  public static async create(config: IOOBCreateData): Promise<OutOfBandSender> {
+  public static create(config: IOOBCreateData): OutOfBandSender {
     const oob = new OutOfBandSender(config.source_id);
     try {
-      oob._setHandle(await ffi.outOfBandSenderCreate(JSON.stringify(config)));
+      oob._setHandle(ffi.outOfBandSenderCreate(JSON.stringify(config)));
       return oob;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -54,7 +54,7 @@ export class OutOfBandSender extends VcxBase<IOOBSerializedData> {
     try {
       ffi.outOfBandSenderAppendMessage(this.handle, message);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -62,7 +62,7 @@ export class OutOfBandSender extends VcxBase<IOOBSerializedData> {
     try {
       ffi.outOfBandSenderAppendServiceDid(this.handle, did);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -70,7 +70,7 @@ export class OutOfBandSender extends VcxBase<IOOBSerializedData> {
     try {
       ffi.outOfBandSenderAppendService(this.handle, service);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -78,7 +78,7 @@ export class OutOfBandSender extends VcxBase<IOOBSerializedData> {
     try {
       return ffi.outOfBandSenderToMessage(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -86,7 +86,7 @@ export class OutOfBandSender extends VcxBase<IOOBSerializedData> {
     try {
       return ffi.outOfBandSenderGetThreadId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 

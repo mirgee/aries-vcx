@@ -13,11 +13,6 @@ const configWalletSample = {
   exported_wallet_path: '/var/folders/libvcx_nodetest/sample.wallet',
 };
 
-const configPool = {
-  pool_name: 'pool1',
-  protocol_version: '2',
-};
-
 const configAgency = {
   agency_endpoint: 'http://127.0.0.1:8080',
   agency_did: '2hoqvcwupRTUNkXn6ArYzs',
@@ -40,7 +35,6 @@ function generateWalletConfig() {
 }
 
 export async function initVcxTestMode(): Promise<void> {
-  // scheduleGarbageCollectionBeforeExit();
   const rustLogPattern = process.env.RUST_LOG || 'vcx=error';
   vcx.defaultLogger(rustLogPattern);
   const configWallet = generateWalletConfig();
@@ -64,21 +58,3 @@ export const shouldThrow = (fn: () => any): Promise<any> =>
       resolve(e);
     }
   });
-
-// let garbageCollectionBeforeExitIsScheduled = false;
-
-// // For some (yet unknown) reason, The Rust library segfaults on exit if global.gc() is not called explicitly.
-// // To solve this issue, we call global.gc() on `beforeExit` event.
-// // NB: This solution only works with Mocha.
-// //     With Jest the 'beforeExit' event doesn't seem fired, so we are instead still using --forceExit before it segfaults.
-// // TODO: Avoid using --exit
-// const scheduleGarbageCollectionBeforeExit = () => {
-//   if (!garbageCollectionBeforeExitIsScheduled) {
-//     process.on('beforeExit', () => {
-//       if (typeof global.gc != 'undefined') {
-//         global.gc();
-//       }
-//     });
-//   }
-//   garbageCollectionBeforeExitIsScheduled = true;
-// };

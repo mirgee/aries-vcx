@@ -43,8 +43,7 @@ async function getInvitationString (fetchInviteUrl) {
 async function runAlice (options) {
   logger.info('Starting.')
 
-  const rustLogPattern = process.env.RUST_LOG || 'vcx=error'
-  initRustLogger(rustLogPattern)
+    initRustLogger(process.env.RUST_LOG || 'vcx=error')
   const agentName = `alice-${uuid.v4()}`
   const connectionId = 'alice-to-faber'
   const holderCredentialId = 'alice-credential'

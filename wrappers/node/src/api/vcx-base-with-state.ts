@@ -1,6 +1,6 @@
 import { Connection } from './mediated-connection';
-import { VcxBase } from './vcx-base-napirs';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VcxBase } from './vcx-base';
+import { VCXInternalError } from '../errors';
 
 export abstract class VcxBaseWithState<SerializedData, StateType> extends VcxBase<SerializedData> {
   protected abstract _updateStFnV2: (handle: number, connHandle: number) => Promise<StateType>;
@@ -10,15 +10,15 @@ export abstract class VcxBaseWithState<SerializedData, StateType> extends VcxBas
     try {
       return await this._updateStFnV2(this.handle, connection.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async getState(): Promise<StateType> {
+  public getState(): StateType {
     try {
-      return await this._getStFn(this.handle);
+      return this._getStFn(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 }

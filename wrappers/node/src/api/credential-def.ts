@@ -1,7 +1,7 @@
 import * as ffi from 'node-napi-rs';
 import { ISerializedData } from './common';
-import { VcxBase } from './vcx-base-napirs';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VcxBase } from './vcx-base';
+import { VCXInternalError } from '../errors';
 
 export interface ICredentialDefCreateDataV2 {
   sourceId: string;
@@ -55,7 +55,7 @@ export class CredentialDef extends VcxBase<ICredentialDefData> {
       credentialDef._setHandle(handle);
       return credentialDef;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -92,7 +92,7 @@ export class CredentialDef extends VcxBase<ICredentialDefData> {
     try {
       this._releaseFn(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -100,7 +100,7 @@ export class CredentialDef extends VcxBase<ICredentialDefData> {
     try {
       await ffi.credentialdefPublish(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -108,7 +108,7 @@ export class CredentialDef extends VcxBase<ICredentialDefData> {
     try {
       return ffi.credentialdefGetCredDefId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -116,7 +116,7 @@ export class CredentialDef extends VcxBase<ICredentialDefData> {
     try {
       return await ffi.credentialdefUpdateState(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -124,7 +124,7 @@ export class CredentialDef extends VcxBase<ICredentialDefData> {
     try {
       return ffi.credentialdefGetState(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 

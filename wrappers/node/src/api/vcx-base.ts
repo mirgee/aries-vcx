@@ -1,6 +1,6 @@
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VCXInternalError } from '../errors';
 import { ISerializedData } from './common';
-import {GCWatcher} from "../utils/memory-management-helpers";
+import {GCWatcher} from "../utils/gc-watcher";
 
 export abstract class VcxBase<SerializedData> extends GCWatcher {
 
@@ -15,7 +15,7 @@ export abstract class VcxBase<SerializedData> extends GCWatcher {
       obj._initFromData(objData);
       return obj;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -32,7 +32,7 @@ export abstract class VcxBase<SerializedData> extends GCWatcher {
     try {
       return JSON.parse(this._serializeFn(this.handle));
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 

@@ -250,7 +250,7 @@ module.exports.createFaber = async function createFaber () {
   }
 
   async function verifySignature (dataBase64, signatureBase64) {
-    logger.debug(`Faber is going to verift signed data. Data=${dataBase64} signature=${signatureBase64}`)
+    logger.debug(`Faber is going to verify signed data. Data=${dataBase64} signature=${signatureBase64}`)
     await vcxAgent.agentInitVcx()
 
     const isValid = await vcxAgent.serviceConnections.verifySignature(connectionId, dataBase64, signatureBase64)

@@ -7,7 +7,9 @@ export interface VcxErrorInfo {
 const VCX_ERR_PREFIX = 'vcx_err_json:';
 const VCX_ERR_PREFIX_LENGTH = VCX_ERR_PREFIX.length;
 
-export class VCXInternalErrorNapirs extends Error {
+
+
+export class VCXInternalError extends Error {
   public readonly vcxError: VcxErrorInfo | undefined;
   public readonly vcxCode: number | undefined;
   public readonly napiCode: string;
@@ -17,7 +19,7 @@ export class VCXInternalErrorNapirs extends Error {
     const message = err.message || JSON.stringify(err);
     super(message);
 
-    if (err instanceof VCXInternalErrorNapirs) {
+    if (err instanceof VCXInternalError) {
       this.vcxError = err.vcxError;
       this.vcxCode = err.vcxCode;
       this.napiCode = err.napiCode;

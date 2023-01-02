@@ -44,9 +44,8 @@ describe('Connection:', () => {
     });
   });
 
-  // todo : restore for aries
   describe('sendMessage:', () => {
-    it.skip('success: sends message', async () => {
+    it('success: sends message', async () => {
       const connection = await connectionCreateInviterNull();
       await connection.connect();
       const error = await shouldThrow(() =>

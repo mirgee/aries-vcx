@@ -1,6 +1,6 @@
 import * as ffiNapi from 'node-napi-rs';
 import * as ref from 'ref-napi';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VCXInternalError } from '../errors';
 import { ISerializedData, ConnectionStateType } from './common';
 import { VcxBaseWithState } from './vcx-base-with-state';
 import { IPwInfo } from './utils';
@@ -132,7 +132,7 @@ export async function downloadMessagesV2({
     const handles = connections.map((connection) => connection.handle);
     return await ffiNapi.mediatedConnectionMessagesDownload(handles, status, uids);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -140,7 +140,7 @@ export function generatePublicInvite(public_did: string, label: string): string 
   try {
     return ffiNapi.mediatedConnectionGeneratePublicInvite(public_did, label);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -151,7 +151,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
       connection._setHandle(await ffiNapi.mediatedConnectionCreate(id));
       return connection;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -161,7 +161,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
       connection._setHandle(await ffiNapi.mediatedConnectionCreateWithInvite(id, invite));
       return connection;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -169,7 +169,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return ffiNapi.mediatedConnectionGetThreadId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -188,7 +188,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
       );
       return connection;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -196,7 +196,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return super._deserialize(Connection, connectionData);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -215,15 +215,15 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return await ffiNapi.mediatedConnectionUpdateStateWithMessage(this.handle, message);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async handleMessage(message: string) {
+  public async handleMessage(message: string): Promise<void> {
     try {
       return await ffiNapi.mediatedConnectionHandleMessage(this.handle, message);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -231,7 +231,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return await ffiNapi.mediatedConnectionUpdateState(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -239,7 +239,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       await ffiNapi.mediatedConnectionDeleteConnection(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -247,7 +247,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return (await ffiNapi.mediatedConnectionConnect(this.handle)) || '{}';
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -258,7 +258,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
         msgData.msg,
       );
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -266,7 +266,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return await ffiNapi.mediatedConnectionSendHandshakeReuse(this.handle, oobMsg);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -274,7 +274,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return await ffiNapi.mediatedConnectionSignData(this.handle, data);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -283,10 +283,10 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
       return await ffiNapi.mediatedConnectionVerifySignature(
         this.handle,
         signatureData.data,
-        signatureData.data,
+        signatureData.signature,
       );
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -294,7 +294,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return ffiNapi.mediatedConnectionInviteDetails(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -302,7 +302,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return await ffiNapi.mediatedConnectionSendPing(this.handle, comment);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -313,7 +313,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return await ffiNapi.mediatedConnectionSendDiscoveryFeatures(this.handle, query, comment);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -321,7 +321,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return ffiNapi.mediatedConnectionGetPwDid(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -329,7 +329,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return ffiNapi.mediatedConnectionGetTheirPwDid(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -337,7 +337,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return await ffiNapi.mediatedConnectionInfo(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -345,7 +345,7 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     try {
       return await ffiNapi.mediatedConnectionMessagesDownload([this.handle], status, uids);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 }

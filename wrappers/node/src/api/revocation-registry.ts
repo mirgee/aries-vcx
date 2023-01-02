@@ -1,7 +1,7 @@
 import * as ffi from 'node-napi-rs';
 import { ISerializedData } from './common';
-import { VcxBase } from './vcx-base-napirs';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VcxBase } from './vcx-base';
+import { VCXInternalError } from '../errors';
 
 export interface IRevocationRegistryData {
   source_id: string;
@@ -40,7 +40,7 @@ export class RevocationRegistry extends VcxBase<IRevocationRegistryData> {
       revReg._setHandle(handle);
       return revReg;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -59,7 +59,7 @@ export class RevocationRegistry extends VcxBase<IRevocationRegistryData> {
     try {
       await ffi.revocationRegistryPublish(this.handle, tailsUrl);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -67,7 +67,7 @@ export class RevocationRegistry extends VcxBase<IRevocationRegistryData> {
     try {
       await ffi.revocationRegistryPublishRevocations(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -75,7 +75,7 @@ export class RevocationRegistry extends VcxBase<IRevocationRegistryData> {
     try {
       return ffi.revocationRegistryGetRevRegId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -83,7 +83,7 @@ export class RevocationRegistry extends VcxBase<IRevocationRegistryData> {
     try {
       return ffi.revocationRegistryGetTailsHash(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 }

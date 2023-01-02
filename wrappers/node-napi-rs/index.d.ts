@@ -99,7 +99,7 @@ export function mediatedConnectionInfo(handle: number): Promise<string>
 export function mediatedConnectionMessagesDownload(connHandles: Array<number>, statusCodes?: string | undefined | null, uids?: string | undefined | null): Promise<string>
 export function mediatedConnectionSignData(handle: number, data: Buffer): Promise<Buffer>
 export function mediatedConnectionVerifySignature(handle: number, data: Buffer, signature: Buffer): Promise<boolean>
-export function outOfBandSenderCreate(config: string): Promise<number>
+export function outOfBandSenderCreate(config: string): number
 export function outOfBandReceiverCreate(msg: string): number
 export function outOfBandReceiverExtractMessage(handle: number): string
 export function outOfBandReceiverConnectionExists(handle: number, connHandles: Array<number>): Promise<number>
@@ -108,7 +108,7 @@ export function outOfBandReceiverGetThreadId(handle: number): string
 export function outOfBandReceiverSerialize(handle: number): string
 export function outOfBandReceiverDeserialize(oobData: string): number
 export function outOfBandReceiverRelease(handle: number): void
-export function outOfBandSenderCreate(config: string): Promise<number>
+export function outOfBandSenderCreate(config: string): number
 export function outOfBandSenderAppendMessage(handle: number, msg: string): void
 export function outOfBandSenderAppendService(handle: number, service: string): void
 export function outOfBandSenderAppendServiceDid(handle: number, did: string): void
@@ -130,7 +130,7 @@ export function proofDeserialize(data: string): number
 export function v2ProofUpdateState(handleProof: number, connectionHandle: number): Promise<number>
 export function v2ProofUpdateStateWithMessage(handleProof: number, message: string, connectionHandle: number): Promise<number>
 export function proofGetState(handle: number): number
-export function proofGetThreadId(handle: number): Promise<string>
+export function proofGetThreadId(handle: number): string
 export function markPresentationRequestMsgSent(handle: number): void
 export function publicAgentCreate(sourceId: string, institutionDid: string): Promise<number>
 export function publicAgentDownloadConnectionRequests(handle: number, uids?: string | undefined | null): Promise<string>

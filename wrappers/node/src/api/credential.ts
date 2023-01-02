@@ -2,7 +2,7 @@ import * as ffi from 'node-napi-rs';
 import { ISerializedData, HolderStateType } from './common';
 import { Connection } from './mediated-connection';
 import { VcxBaseWithState } from './vcx-base-with-state';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VCXInternalError } from '../errors';
 
 export interface ICredentialStructData {
   source_id: string;
@@ -29,7 +29,7 @@ export class Credential extends VcxBaseWithState<ICredentialStructData, HolderSt
       credential._setHandle(handle);
       return credential;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -52,7 +52,7 @@ export class Credential extends VcxBaseWithState<ICredentialStructData, HolderSt
       const offers: ICredentialOffer[] = JSON.parse(offersStr);
       return offers;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -60,7 +60,7 @@ export class Credential extends VcxBaseWithState<ICredentialStructData, HolderSt
     try {
       return await ffi.credentialSendRequest(this.handle, connection.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -68,7 +68,7 @@ export class Credential extends VcxBaseWithState<ICredentialStructData, HolderSt
     try {
       return ffi.credentialGetAttributes(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -76,7 +76,7 @@ export class Credential extends VcxBaseWithState<ICredentialStructData, HolderSt
     try {
       return ffi.credentialGetAttachment(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -84,7 +84,7 @@ export class Credential extends VcxBaseWithState<ICredentialStructData, HolderSt
     try {
       return ffi.credentialGetTailsLocation(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -92,7 +92,7 @@ export class Credential extends VcxBaseWithState<ICredentialStructData, HolderSt
     try {
       return ffi.credentialGetTailsHash(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -100,7 +100,7 @@ export class Credential extends VcxBaseWithState<ICredentialStructData, HolderSt
     try {
       return ffi.credentialGetRevRegId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -108,15 +108,15 @@ export class Credential extends VcxBaseWithState<ICredentialStructData, HolderSt
     try {
       return ffi.credentialGetThreadId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async declineOffer(connection: Connection, comment: string): Promise<void> {
+  public async declineOffer(connection: Connection, comment: string) {
     try {
       await ffi.credentialDeclineOffer(this.handle, connection.handle, comment);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 

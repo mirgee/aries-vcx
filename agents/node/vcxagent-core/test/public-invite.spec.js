@@ -5,8 +5,7 @@ const { initRustLogger } = require('../src')
 
 beforeAll(async () => {
   jest.setTimeout(1000 * 60 * 4)
-  const rustLogPattern = process.env.RUST_LOG || 'vcx=error'
-  initRustLogger(rustLogPattern)
+  initRustLogger(process.env.RUST_LOG || 'vcx=error')
 })
 
 describe('test public invite', () => {

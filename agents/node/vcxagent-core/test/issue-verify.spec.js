@@ -7,8 +7,7 @@ const { initRustLogger } = require('../src')
 
 beforeAll(async () => {
   jest.setTimeout(1000 * 60 * 4)
-  const rustLogPattern = process.env.RUST_LOG || 'vcx=error'
-  initRustLogger(rustLogPattern)
+  initRustLogger(process.env.RUST_LOG || 'vcx=error')
 })
 
 describe('test update state', () => {
@@ -31,8 +30,8 @@ describe('test update state', () => {
       await faber.updateStateVerifierProof(VerifierStateType.Finished)
       await alice.updateStateHolderProof(ProverStateType.Finished)
     } catch (err) {
-      console.error(`err = ${err.message} stack = ${err.stack}`)
       await sleep(2000)
+      console.error(`err = ${err.message} stack = ${err.stack}`)
       throw Error(err)
     }
   })

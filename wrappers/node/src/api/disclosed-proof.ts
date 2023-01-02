@@ -2,7 +2,7 @@ import { ISerializedData, ProverStateType } from './common';
 import { Connection } from './mediated-connection';
 import { VcxBaseWithState } from './vcx-base-with-state';
 import * as ffi from '../../../node-napi-rs';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VCXInternalError } from '../errors';
 
 export interface IDisclosedProofData {
   source_id: string;
@@ -59,7 +59,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
       disclosedProof._setHandle(ffi.disclosedProofCreateWithRequest(sourceId, request));
       return disclosedProof;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -67,7 +67,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
     try {
       return super._deserialize(DisclosedProof, data);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -82,7 +82,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
       const string_msgs = await ffi.disclosedProofGetRequests(connection.handle);
       return JSON.parse(string_msgs);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -91,7 +91,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
       const credentials = await ffi.disclosedProofRetrieveCredentials(this.handle);
       return JSON.parse(credentials);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -99,7 +99,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
     try {
       return ffi.disclosedProofGetProofRequestAttachment(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -107,7 +107,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
     try {
       return ffi.disclosedProofGetThreadId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -115,7 +115,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
     try {
       return await ffi.disclosedProofSendProof(this.handle, connection.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -123,7 +123,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
     try {
       return await ffi.disclosedProofRejectProof(this.handle, connection.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -131,7 +131,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
     try {
       return ffi.disclosedProofGetProofMsg(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -146,7 +146,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
         JSON.stringify(selfAttestedAttrs),
       );
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -163,7 +163,7 @@ export class DisclosedProof extends VcxBaseWithState<IDisclosedProofData, Prover
         JSON.stringify(proposal),
       );
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 }

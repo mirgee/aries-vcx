@@ -13,15 +13,6 @@ import {
 describe('utils:', () => {
   before(() => initVcxTestMode());
 
-  const downloadMessagesData = {
-    pairwiseDids: 'asdf',
-    status: 'MS-104',
-    uids: 'asdf',
-  };
-  const updateMessagesData = {
-    msgJson: '[{"pairwiseDID":"QSrw8hebcvQxiwBETmAaRs","uids":["mgrmngq"]}]',
-  };
-
   describe('provisionAgent:', () => {
     it('success', async () => {
       const provisionConfig = {

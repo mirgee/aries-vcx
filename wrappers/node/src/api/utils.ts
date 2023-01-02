@@ -1,5 +1,5 @@
 import * as ffiNapi from 'node-napi-rs';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VCXInternalError } from '../errors';
 import * as ffi from '../../../node-napi-rs';
 
 export interface IPwInfo {
@@ -25,7 +25,7 @@ export async function provisionCloudAgent(configAgent: object): Promise<string> 
   try {
     return await ffiNapi.provisionCloudAgent(JSON.stringify(configAgent));
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -39,7 +39,7 @@ export function getVersion(): string {
   try {
     return ffi.getVersion();
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -47,7 +47,7 @@ export async function getLedgerAuthorAgreement(): Promise<string> {
   try {
     return await ffi.getLedgerAuthorAgreement();
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -67,7 +67,7 @@ export function setActiveTxnAuthorAgreementMeta(
       timeOfAcceptance,
     );
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -75,7 +75,7 @@ export function shutdownVcx(deleteWallet: boolean): void {
   try {
     ffiNapi.shutdown(deleteWallet);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -87,7 +87,7 @@ export async function vcxUpdateWebhookUrl({ webhookUrl }: IUpdateWebhookUrl): Pr
   try {
     await ffi.updateWebhookUrl(webhookUrl);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -99,7 +99,7 @@ export async function updateMessages(updateConfig: IUpdateMessagesConfigs): Prom
   try {
     await ffiNapi.messagesUpdateStatus('MS-106', updateConfig.msgJson);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -107,7 +107,7 @@ export async function rotateVerkey(did: string): Promise<void> {
   try {
     await ffi.rotateVerkey(did);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -115,7 +115,7 @@ export async function rotateVerkeyStart(did: string): Promise<string> {
   try {
     return await ffi.rotateVerkeyStart(did);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -123,7 +123,7 @@ export async function rotateVerkeyApply(did: string, tempVk: string): Promise<vo
   try {
     await ffi.rotateVerkeyApply(did, tempVk);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -131,7 +131,7 @@ export async function getVerkeyFromWallet(did: string): Promise<string> {
   try {
     return await ffi.getVerkeyFromWallet(did);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -139,7 +139,7 @@ export async function getVerkeyFromLedger(did: string): Promise<string> {
   try {
     return await ffi.getVerkeyFromLedger(did);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -147,7 +147,7 @@ export async function getLedgerTxn(did: string, seqNo: number): Promise<string> 
   try {
     return await ffi.getLedgerTxn(seqNo, did);
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -155,7 +155,7 @@ export async function createPwInfo(): Promise<IPwInfo> {
   try {
     return JSON.parse(await ffi.createPairwiseInfo());
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -168,7 +168,7 @@ export async function createService(
   try {
     return JSON.parse(await ffi.createService(target_did, recipientKeys, routingKeys, endpoint));
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -176,7 +176,7 @@ export async function getServiceFromLedger(did: string): Promise<IAriesService> 
   try {
     return JSON.parse(await ffi.getServiceFromLedger(did));
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }
 
@@ -184,6 +184,6 @@ export async function unpack(data: Buffer): Promise<IMsgUnpacked> {
   try {
     return JSON.parse(await ffi.unpack(data));
   } catch (err: any) {
-    throw new VCXInternalErrorNapirs(err);
+    throw new VCXInternalError(err);
   }
 }

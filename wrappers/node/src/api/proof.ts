@@ -2,7 +2,7 @@ import * as ffi from '../../../node-napi-rs';
 import { ISerializedData, VerifierStateType } from './common';
 import { Connection } from './mediated-connection';
 import { VcxBaseWithState } from './vcx-base-with-state';
-import { VCXInternalErrorNapirs } from '../errors-napirs';
+import { VCXInternalError } from '../errors';
 
 export interface IProofCreateData {
   sourceId: string;
@@ -98,7 +98,7 @@ export class Proof extends VcxBaseWithState<IProofData, VerifierStateType> {
       proof._setHandle(handle);
       return proof;
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -106,7 +106,7 @@ export class Proof extends VcxBaseWithState<IProofData, VerifierStateType> {
     try {
       return super._deserialize<Proof, IProofConstructorData>(Proof, proofData);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -133,7 +133,7 @@ export class Proof extends VcxBaseWithState<IProofData, VerifierStateType> {
         connection.handle,
       );
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -141,7 +141,7 @@ export class Proof extends VcxBaseWithState<IProofData, VerifierStateType> {
     try {
       return await ffi.proofSendRequest(this.handle, connection.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -149,7 +149,7 @@ export class Proof extends VcxBaseWithState<IProofData, VerifierStateType> {
     try {
       return ffi.proofGetRequestMsg(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -157,15 +157,15 @@ export class Proof extends VcxBaseWithState<IProofData, VerifierStateType> {
     try {
       return ffi.markPresentationRequestMsgSent(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
-  public async getThreadId(): Promise<string> {
+  public getThreadId(): string {
     try {
       return ffi.proofGetThreadId(this.handle);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 
@@ -174,7 +174,7 @@ export class Proof extends VcxBaseWithState<IProofData, VerifierStateType> {
       const msgs = ffi.proofGetProofMsg(this.handle);
       return JSON.parse(msgs);
     } catch (err: any) {
-      throw new VCXInternalErrorNapirs(err);
+      throw new VCXInternalError(err);
     }
   }
 }

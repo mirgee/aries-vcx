@@ -18,8 +18,7 @@ const tailsDir = '/tmp/tails'
 
 async function runFaber (options) {
   logger.info(`Starting. Revocation enabled=${options.revocation}`)
-  const rustLogPattern = process.env.RUST_LOG || 'vcx=error'
-  initRustLogger(rustLogPattern)
+    initRustLogger(process.env.RUST_LOG || 'vcx=error')
 
   let faberServer
   let exitcode = 0

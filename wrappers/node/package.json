@@ -34,10 +34,10 @@
     "ffi-napi": "^4.0.3",
     "fs-extra": "^4.0.2",
     "lodash": "^4.17.21",
+    "node-napi-rs": "../node-napi-rs",
     "ref-napi": "^3.0.3",
     "uuid": "^8.3.2",
-    "weak-napi": "^2.0.2",
-    "node-napi-rs": "../node-napi-rs"
+    "weak-napi": "^2.0.2"
   },
   "devDependencies": {
     "@types/app-module-path": "^2.2.0",

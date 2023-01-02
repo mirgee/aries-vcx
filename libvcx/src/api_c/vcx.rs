@@ -26,8 +26,6 @@ use crate::api_c::cutils::current_error::{get_current_error_c_json, set_current_
 use crate::api_c::cutils::runtime::{execute, execute_async, init_threadpool};
 use crate::api_vcx::api_global::VERSION_STRING;
 
-use crate::api_vcx::utils::version_constants;
-
 /// Only for Wrapper testing purposes, sets global library settings.
 ///
 /// #Params

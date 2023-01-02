@@ -1,8 +1,6 @@
 import * as ref from 'ref-napi';
 import { ICbRef } from './utils/ffi-helpers';
 
-import { VCXRuntime } from './vcx';
-
 interface IUintTypes {
   [key: string]: string;
 }
@@ -1236,24 +1234,3 @@ export const FFIConfiguration: { [Key in keyof IFFIEntryPoint]: any } = {
     [FFI_COMMAND_HANDLE, FFI_STRING_DATA, FFI_CALLBACK_PTR]
   ],
 };
-
-let _rustAPI: IFFIEntryPoint;
-let wasInitialized = false;
-export const initRustAPI = (path?: string): IFFIEntryPoint => {
-  if (wasInitialized) {
-    throw new Error(
-      'initRustAPI was already initialized. Make sure you only call it once in the lifetime of the process.',
-    );
-  }
-  _rustAPI = new VCXRuntime({ basepath: path }).ffi;
-  wasInitialized = true;
-  return _rustAPI;
-};
-export const rustAPI = (): IFFIEntryPoint => {
-  if (!_rustAPI) {
-    throw new Error('RustAPI not loaded. Make sure you are calling initRustAPI(...)');
-  }
-  return _rustAPI;
-};
-
-export const isRustApiInitialized = (): boolean => Boolean(_rustAPI);

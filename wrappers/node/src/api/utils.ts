@@ -36,11 +36,11 @@ export interface PtrBuffer extends Buffer {
 }
 
 export function getVersion(): string {
-    try {
-        return ffi.getVersion();
-    } catch (err: any) {
-        throw new VCXInternalErrorNapirs(err);
-    }
+  try {
+    return ffi.getVersion();
+  } catch (err: any) {
+    throw new VCXInternalErrorNapirs(err);
+  }
 }
 
 export async function getLedgerAuthorAgreement(): Promise<string> {

@@ -1,5 +1,4 @@
 import * as ffiNapi from 'node-napi-rs';
-import * as ref from 'ref-napi';
 import { VCXInternalError } from '../errors';
 import { ISerializedData, ConnectionStateType } from './common';
 import { VcxBaseWithState } from './vcx-base-with-state';
@@ -99,14 +98,6 @@ export interface ISignatureData {
  *    }
  */
 export type IConnectionInfo = string;
-
-export function voidPtrToUint8Array(origPtr: Buffer, length: number): Buffer {
-  /**
-   * Read the contents of the pointer and copy it into a new Buffer
-   */
-  const ptrType = ref.refType('uint8 *');
-  return ref.reinterpret(origPtr, length * ptrType.size);
-}
 
 export interface IDownloadMessagesConfigsV2 {
   connections: [Connection];

@@ -29,12 +29,6 @@ export async function provisionCloudAgent(configAgent: object): Promise<string> 
   }
 }
 
-export interface PtrBuffer extends Buffer {
-  // Buffer.deref typing provided by @types/ref-napi is wrong, so we overwrite the typing/
-  // An issue is currently dealing with fixing it https://github.com/DefinitelyTyped/DefinitelyTyped/pull/44004#issuecomment-744497037
-  deref: () => PtrBuffer;
-}
-
 export function getVersion(): string {
   try {
     return ffi.getVersion();

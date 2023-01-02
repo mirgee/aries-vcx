@@ -14,6 +14,5 @@ pub fn shutdown(delete_all: Option<bool>) -> ::napi::Result<()> {
 
 #[napi]
 pub fn get_version() -> ::napi::Result<String> {
-    return Ok(VERSION_STRING.clone())
+    return Ok(VERSION_STRING.clone());
 }
-

@@ -206,7 +206,9 @@ pub async fn mediated_connection_messages_download(
 
 #[napi]
 pub async fn mediated_connection_sign_data(handle: u32, data: Buffer) -> napi::Result<Buffer> {
-    let res = mediated_connection::sign_data(handle, &data.to_vec()).await.map_err(to_napi_err)?;
+    let res = mediated_connection::sign_data(handle, &data.to_vec())
+        .await
+        .map_err(to_napi_err)?;
     Ok(Buffer::from(res))
 }
 

@@ -1,4 +1,4 @@
-import * as ffiNapi from 'node-napi-rs';
+import * as ffiNapi from 'vcx-napi-rs';
 
 import {VCXInternalError} from "../errors";
 

@@ -33,7 +33,7 @@
   "dependencies": {
     "fs-extra": "^4.0.2",
     "lodash": "^4.17.21",
-    "node-napi-rs": "../node-napi-rs",
+    "vcx-napi-rs": "../vcx-napi-rs",
     "uuid": "^8.3.2",
     "weak-napi": "^2.0.2"
   },

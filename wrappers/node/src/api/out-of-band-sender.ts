@@ -1,4 +1,4 @@
-import * as ffi from 'node-napi-rs';
+import * as ffi from 'vcx-napi-rs';
 import { VCXInternalError } from '../errors';
 import { VcxBase } from './vcx-base';
 import { ISerializedData } from './common';

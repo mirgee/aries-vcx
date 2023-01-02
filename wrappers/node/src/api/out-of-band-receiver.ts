@@ -1,4 +1,4 @@
-import * as ffi from 'node-napi-rs';
+import * as ffi from 'vcx-napi-rs';
 import { VCXInternalError } from '../errors';
 import { IOOBSerializedData } from './out-of-band-sender';
 import { Connection } from './mediated-connection';

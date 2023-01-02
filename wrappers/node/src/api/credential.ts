@@ -1,4 +1,4 @@
-import * as ffi from 'node-napi-rs';
+import * as ffi from 'vcx-napi-rs';
 import { ISerializedData, HolderStateType } from './common';
 import { Connection } from './mediated-connection';
 import { VcxBaseWithState } from './vcx-base-with-state';

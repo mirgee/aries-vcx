@@ -1,7 +1,7 @@
 import { ISerializedData, ProverStateType } from './common';
 import { Connection } from './mediated-connection';
 import { VcxBaseWithState } from './vcx-base-with-state';
-import * as ffi from '../../../node-napi-rs';
+import * as ffi from '../../../vcx-napi-rs';
 import { VCXInternalError } from '../errors';
 
 export interface IDisclosedProofData {

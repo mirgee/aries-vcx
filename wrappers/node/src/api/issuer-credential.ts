@@ -1,4 +1,4 @@
-import * as ffi from 'node-napi-rs';
+import * as ffi from 'vcx-napi-rs';
 import { ISerializedData, IssuerStateType } from './common';
 import { Connection } from './mediated-connection';
 import { CredentialDef } from './credential-def';

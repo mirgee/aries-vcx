@@ -1,6 +1,6 @@
-import * as ffiNapi from 'node-napi-rs';
+import * as ffiNapi from 'vcx-napi-rs';
 import { VCXInternalError } from '../errors';
-import * as ffi from '../../../node-napi-rs';
+import * as ffi from '../../../vcx-napi-rs';
 
 export async function createWallet(config: object): Promise<void> {
   try {

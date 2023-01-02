@@ -1,10 +1,10 @@
 import { VCXInternalErrorNapirs } from '../errors-napirs';
 import { ISerializedData } from './common';
+import {GCWatcher} from "../utils/memory-management-helpers";
 
-export abstract class VcxBase<SerializedData> {
-  private _handleRef!: number;
+export abstract class VcxBase<SerializedData> extends GCWatcher {
 
-  protected static _deserialize<T extends VcxBase<unknown>, P = unknown>(
+  protected static _deserialize<T extends VcxBase<unknown>, P = unknown> (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     VCXClass: new (sourceId: string, args?: any) => T,
     objData: ISerializedData<{ source_id: string }>,
@@ -24,6 +24,7 @@ export abstract class VcxBase<SerializedData> {
   protected _sourceId: string;
 
   constructor(sourceId: string) {
+    super();
     this._sourceId = sourceId;
   }
 
@@ -35,7 +36,6 @@ export abstract class VcxBase<SerializedData> {
     }
   }
 
-  /** The source Id assigned by the user for this object */
   get sourceId(): string {
     return this._sourceId;
   }
@@ -43,13 +43,5 @@ export abstract class VcxBase<SerializedData> {
   private _initFromData(objData: ISerializedData<{ source_id: string }>): void {
     const objHandle = this._deserializeFn(JSON.stringify(objData))
     this._setHandle(objHandle);
-  }
-
-  protected _setHandle(handle: number): void {
-    this._handleRef = handle;
-  }
-
-  get handle(): number {
-    return this._handleRef;
   }
 }

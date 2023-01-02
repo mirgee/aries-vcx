@@ -7,20 +7,22 @@ import { ISerializedData } from './common';
 
 export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
   public static createWithMessage(msg: string): OutOfBandReceiver {
-    const oob = new OutOfBandReceiver("");
+    const oob = new OutOfBandReceiver('');
     try {
-      oob._setHandle(ffi.outOfBandReceiverCreate(msg))
+      oob._setHandle(ffi.outOfBandReceiverCreate(msg));
       return oob;
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
   }
 
-  public static deserialize(
-    data: ISerializedData<IOOBSerializedData>,
-  ): OutOfBandReceiver {
+  public static deserialize(data: ISerializedData<IOOBSerializedData>): OutOfBandReceiver {
     const newObj = { ...data, source_id: 'foo' };
-    return super._deserialize(OutOfBandReceiver, newObj);
+    try {
+      return super._deserialize(OutOfBandReceiver, newObj);
+    } catch (err: any) {
+      throw new VCXInternalErrorNapirs(err);
+    }
   }
 
   public extractMessage(): string {
@@ -52,7 +54,7 @@ export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
 
   public getThreadId(): string {
     try {
-      return ffi.outOfBandReceiverGetThreadId(this.handle)
+      return ffi.outOfBandReceiverGetThreadId(this.handle);
     } catch (err: any) {
       throw new VCXInternalErrorNapirs(err);
     }
@@ -60,5 +62,5 @@ export class OutOfBandReceiver extends VcxBase<IOOBSerializedData> {
 
   protected _serializeFn = ffi.outOfBandReceiverSerialize;
   protected _deserializeFn = ffi.outOfBandReceiverDeserialize;
-  protected _releaseFn = ffi.outOfBandReceiverDeserialize;
+  protected _releaseFn = ffi.outOfBandReceiverRelease;
 }

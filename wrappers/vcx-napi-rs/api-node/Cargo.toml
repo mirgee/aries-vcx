@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-libvcx = { path = "../../../libvcx" }
+libvcx = { path = "../../../libvcx", default-features = false }
 log = "0.4.16"
 napi = { version = "=2.9.1", default-features = false, features = [ "async" ] }
 napi-derive = { version = "=2.9.3" }

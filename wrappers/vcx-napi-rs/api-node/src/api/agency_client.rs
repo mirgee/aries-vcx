@@ -1,7 +1,6 @@
 use napi_derive::napi;
 
 use vcx::api_vcx::api_global::agency_client;
-use vcx::api_vcx::api_global::settings::enable_mocks;
 use vcx::api_vcx::api_handle::mediated_connection::update_message_status;
 use vcx::aries_vcx::agency_client::configuration::{AgencyClientConfig, AgentProvisionConfig};
 use vcx::aries_vcx::agency_client::messages::update_message::UIDsByConn;

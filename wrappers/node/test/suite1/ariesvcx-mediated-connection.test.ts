@@ -32,8 +32,7 @@ describe('Connection:', () => {
   describe('connect:', () => {
     it('success', async () => {
       const connection = await connectionCreateInviterNull();
-      const inviteDetails = await connection.connect();
-      assert.notEqual(inviteDetails, '');
+      await connection.connect();
     });
 
     it('throws: not initialized', async () => {

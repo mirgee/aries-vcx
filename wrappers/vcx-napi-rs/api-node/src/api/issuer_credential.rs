@@ -1,5 +1,4 @@
 use crate::error::to_napi_err;
-use napi::Error;
 use napi_derive::napi;
 use vcx::api_vcx::api_handle::issuer_credential;
 use vcx::aries_vcx::messages::a2a::A2AMessage;

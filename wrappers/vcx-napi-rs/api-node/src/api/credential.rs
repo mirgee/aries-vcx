@@ -1,9 +1,6 @@
-use napi::Error;
 use napi_derive::napi;
 
-use vcx::api_vcx::api_handle::{credential, issuer_credential};
-use vcx::aries_vcx::messages::a2a::A2AMessage;
-use vcx::serde_json::json;
+use vcx::api_vcx::api_handle::credential;
 
 use crate::error::to_napi_err;
 

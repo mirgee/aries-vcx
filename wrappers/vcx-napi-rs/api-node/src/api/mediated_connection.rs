@@ -1,10 +1,8 @@
 use napi::bindgen_prelude::Buffer;
 use napi_derive::napi;
-use vcx::api_vcx::api_global::wallet::{wallet_sign, wallet_verify};
 use vcx::api_vcx::api_handle::mediated_connection;
 use vcx::api_vcx::api_handle::mediated_connection::parse_status_codes;
 
-use vcx::aries_vcx::indy;
 use vcx::aries_vcx::protocols::connection::pairwise_info::PairwiseInfo;
 use vcx::errors::error::{LibvcxError, LibvcxErrorKind};
 use vcx::serde_json;
@@ -175,7 +173,7 @@ pub async fn mediated_connection_delete_connection(handle: u32) -> napi::Result<
 #[napi]
 pub async fn mediated_connection_connect(handle: u32) -> napi::Result<()> {
     trace!("mediated_connection_connect >>> handle: {:?}", handle);
-    mediated_connection::connect(handle).await.map_err(to_napi_err);
+    mediated_connection::connect(handle).await.map_err(to_napi_err)?;
     Ok(())
 }
 
@@ -258,7 +256,7 @@ pub async fn mediated_connection_messages_download(
     let status_codes = if let Some(status_codes) = status_codes {
         let v: Vec<&str> = status_codes.split(',').collect();
         let v = v.iter().map(|s| s.to_string()).collect::<Vec<String>>();
-        Some(v.to_owned())
+        Some(v)
     } else {
         None
     };
@@ -268,7 +266,7 @@ pub async fn mediated_connection_messages_download(
     let uids = if let Some(uids) = uids {
         let v: Vec<&str> = uids.split(',').collect();
         let v = v.iter().map(|s| s.to_string()).collect::<Vec<String>>();
-        Some(v.to_owned())
+        Some(v)
     } else {
         None
     };

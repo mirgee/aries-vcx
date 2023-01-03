@@ -1,6 +1,6 @@
 use napi_derive::napi;
 
-use vcx::api_vcx::api_handle::{agent, out_of_band};
+use vcx::api_vcx::api_handle::agent;
 
 use crate::error::to_napi_err;
 

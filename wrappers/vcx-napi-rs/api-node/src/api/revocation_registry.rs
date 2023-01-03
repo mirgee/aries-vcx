@@ -1,7 +1,7 @@
 use napi_derive::napi;
 
 use vcx::api_vcx::api_handle::revocation_registry::RevocationRegistryConfig;
-use vcx::api_vcx::api_handle::{credential_def, revocation_registry, schema};
+use vcx::api_vcx::api_handle::revocation_registry;
 use vcx::errors::error::{LibvcxError, LibvcxErrorKind};
 use vcx::serde_json;
 

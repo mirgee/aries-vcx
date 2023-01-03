@@ -45,3 +45,8 @@ runs:
     - name: "Transpile TS wrapper"
       shell: bash
       run: (cd wrappers/node && npm install && npm run compile)
+    - name: "Check wrappers"
+      shell: bash
+      run: |
+        ls -lah wrappers/vcx-napi-rs
+        ls -lah wrappers/node

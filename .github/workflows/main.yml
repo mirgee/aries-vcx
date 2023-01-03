@@ -387,7 +387,7 @@ jobs:
           skip-docker-setup: true
           node-version: ${{ matrix.node-version }}
       - name: "Run tests"
-        run: cd wrappers/node && npm run test
+        run: cd wrappers/node && RUST_LOG=vcx=trace npm run test
 
   test-integration-node-wrapper:
     needs: workflow-setup

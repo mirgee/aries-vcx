@@ -278,9 +278,9 @@ module.exports.createFaber = async function createFaber () {
   }
 
   async function createConnectionFromReceivedRequestV2 (pwInfo, request) {
-    logger.info('Faber is going to create a connection from a request')
-    await vcxAgent.agentInitVcx()
+    logger.info(`Faber is going to create a connection from a request: ${request}, using pwInfo: ${JSON.stringify(pwInfo)}`)
 
+    await vcxAgent.agentInitVcx()
     await vcxAgent.serviceConnections.inviterConnectionCreateFromRequestV2(connectionId, pwInfo, request)
     expect(await vcxAgent.serviceConnections.connectionUpdate(connectionId)).toBe(ConnectionStateType.Responded)
 

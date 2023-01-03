@@ -482,6 +482,7 @@ pub extern "C" fn vcx_get_current_error(error_json_p: *mut *const c_char) {
 pub mod test_utils {
     use aries_vcx::agency_client::testing::mocking::enable_agency_mocks;
     use aries_vcx::global::settings::{DEFAULT_WALLET_KEY, WALLET_KDF_RAW};
+    use uuid;
 
     use crate::api_c::cutils::return_types_u32;
     use crate::api_c::cutils::timeout::TimeoutUtils;

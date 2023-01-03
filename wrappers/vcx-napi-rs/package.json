@@ -10,7 +10,7 @@
     "build:napi:debug": "napi build --cargo-cwd ./api-node/ ."
   },
   "napi": {
-    "name": "vcx-napi-rs",
+    "name": "index",
     "triples": {
       "defaults": false,
       "additional": [

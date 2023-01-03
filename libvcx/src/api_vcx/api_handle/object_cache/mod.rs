@@ -185,6 +185,7 @@ where
     }
 
     pub fn add(&self, obj: T) -> LibvcxResult<u32> {
+        trace!("[ObjectCache: {}] add >> Adding object to cache", self.cache_name);
         let mut store = self._lock_store_write()?;
 
         let mut new_handle = rand::thread_rng().gen::<u32>();
@@ -202,6 +203,7 @@ where
     }
 
     pub fn insert(&self, handle: u32, obj: T) -> LibvcxResult<()> {
+        trace!("[ObjectCache: {}] insert >> Inserting object with handle: {}", self.cache_name, handle);
         let mut store = self._lock_store_write()?;
 
         store.insert(handle, Mutex::new(obj));
@@ -209,6 +211,7 @@ where
     }
 
     pub fn release(&self, handle: u32) -> LibvcxResult<()> {
+        trace!("[ObjectCache: {}] release >> Releasing object with handle: {}", self.cache_name, handle);
         let mut store = self._lock_store_write()?;
         match store.remove(&handle) {
             Some(_) => {}
@@ -223,6 +226,7 @@ where
     }
 
     pub fn drain(&self) -> LibvcxResult<()> {
+        warn!("[ObjectCache: {}] drain >> Draining object cache", self.cache_name);
         let mut store = self._lock_store_write()?;
         store.clear();
         Ok(())

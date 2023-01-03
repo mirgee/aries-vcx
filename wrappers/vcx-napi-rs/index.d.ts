@@ -88,7 +88,7 @@ export function mediatedConnectionUpdateStateWithMessage(handle: number, message
 export function mediatedConnectionHandleMessage(handle: number, message: string): Promise<void>
 export function mediatedConnectionUpdateState(handle: number): Promise<number>
 export function mediatedConnectionDeleteConnection(handle: number): Promise<void>
-export function mediatedConnectionConnect(handle: number): Promise<string | null>
+export function mediatedConnectionConnect(handle: number): Promise<void>
 export function mediatedConnectionSerialize(handle: number): string
 export function mediatedConnectionDeserialize(connectionData: string): number
 export function mediatedConnectionRelease(handle: number): void

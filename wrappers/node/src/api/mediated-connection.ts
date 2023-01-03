@@ -234,9 +234,9 @@ export class Connection extends VcxBaseWithState<IConnectionData, ConnectionStat
     }
   }
 
-  public async connect(): Promise<string> {
+  public async connect(): Promise<void> {
     try {
-      return (await ffiNapi.mediatedConnectionConnect(this.handle)) || '{}';
+      return await ffiNapi.mediatedConnectionConnect(this.handle);
     } catch (err: any) {
       throw new VCXInternalError(err);
     }

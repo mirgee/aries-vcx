@@ -125,8 +125,9 @@ pub async fn mediated_connection_delete_connection(handle: u32) -> napi::Result<
 }
 
 #[napi]
-pub async fn mediated_connection_connect(handle: u32) -> napi::Result<Option<String>> {
-    mediated_connection::connect(handle).await.map_err(to_napi_err)
+pub async fn mediated_connection_connect(handle: u32) -> napi::Result<()> {
+    mediated_connection::connect(handle).await.map_err(to_napi_err);
+    Ok(())
 }
 
 #[napi]

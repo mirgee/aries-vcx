@@ -40,8 +40,7 @@ export const createConnectionInviterInvited = async (
   data = dataConnectionCreate(),
 ): Promise<Connection> => {
   const connection = await connectionCreateInviterNull(data);
-  const inviteDetails = await connection.connect();
-  assert.ok(inviteDetails);
+  await connection.connect();
   return connection;
 };
 
@@ -126,10 +125,10 @@ export const disclosedProofCreateWithRequest = async (
   if (!data) {
     data = await dataDisclosedProofCreateWithRequest();
   }
-  const disclousedProof = await DisclosedProof.create(data);
-  assert.notEqual(disclousedProof.handle, undefined);
-  assert.equal(disclousedProof.sourceId, data.sourceId);
-  return disclousedProof;
+  const disclosedProof = DisclosedProof.create(data);
+  assert.notEqual(disclosedProof.handle, undefined);
+  assert.equal(disclosedProof.sourceId, data.sourceId);
+  return disclosedProof;
 };
 
 export const issuerCredentialCreate = async (): Promise<

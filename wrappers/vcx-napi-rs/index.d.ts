@@ -130,6 +130,7 @@ export function proofDeserialize(data: string): number
 export function v2ProofUpdateState(handleProof: number, connectionHandle: number): Promise<number>
 export function v2ProofUpdateStateWithMessage(handleProof: number, message: string, connectionHandle: number): Promise<number>
 export function proofGetState(handle: number): number
+export function proofGetProofState(handle: number): number
 export function proofGetThreadId(handle: number): string
 export function markPresentationRequestMsgSent(handle: number): void
 export function publicAgentCreate(sourceId: string, institutionDid: string): Promise<number>

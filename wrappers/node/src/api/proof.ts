@@ -171,8 +171,12 @@ export class Proof extends VcxBaseWithState<IProofData, VerifierStateType> {
 
   public getProof(): IProofResponses {
     try {
-      const msgs = ffi.proofGetProofMsg(this.handle);
-      return JSON.parse(msgs);
+      const proof = ffi.proofGetProofMsg(this.handle);
+      const proofState = ffi.proofGetProofState(this.handle);
+      return {
+        proof,
+        proofState,
+      };
     } catch (err: any) {
       throw new VCXInternalError(err);
     }

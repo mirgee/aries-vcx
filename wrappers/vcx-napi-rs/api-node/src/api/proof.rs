@@ -88,6 +88,11 @@ fn proof_get_state(handle: u32) -> napi::Result<u32> {
 }
 
 #[napi]
+fn proof_get_proof_state(handle: u32) -> napi::Result<u32> {
+    proof::get_proof_state(handle).map_err(to_napi_err)
+}
+
+#[napi]
 fn proof_get_thread_id(handle: u32) -> napi::Result<String> {
     proof::get_thread_id(handle).map_err(to_napi_err)
 }

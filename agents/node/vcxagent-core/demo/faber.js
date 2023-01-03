@@ -112,6 +112,7 @@ async function runFaber (options) {
 
     logger.info('#27 Process the proof provided by alice.')
     const { proofState, proof } = await vcxProof.getProof()
+    logger.info(`#27 Proof: proofState=${proofState}, proof=${proof}`)
     assert(proofState)
     assert(proof)
     logger.info(`Proof protocol state = ${JSON.stringify(proofProtocolState)}`)

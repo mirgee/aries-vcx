@@ -5,6 +5,7 @@ const { ConnectionStateType, IssuerStateType, VerifierStateType, generatePublicI
 } = require('@hyperledger/node-vcx-wrapper')
 const { getAliceSchemaAttrs, getFaberCredDefName, getFaberProofData } = require('./data')
 const sleep = require('sleep-promise')
+const assert = require('assert')
 
 module.exports.createFaber = async function createFaber () {
   const agentName = `faber-${Math.floor(new Date() / 1000)}`
@@ -83,6 +84,7 @@ module.exports.createFaber = async function createFaber () {
   }
 
   async function unpackMsg (encryptedMsg) {
+    assert(encryptedMsg)
     logger.info(`Faber is going to unpack message of length ${encryptedMsg.length}`)
     await vcxAgent.agentInitVcx()
 

@@ -11,7 +11,6 @@ pub mod out_of_band_receiver;
 pub mod out_of_band_sender;
 pub mod pool;
 pub mod proof;
-pub mod public_agent;
 pub mod revocation_registry;
 pub mod schema;
 pub mod testing;

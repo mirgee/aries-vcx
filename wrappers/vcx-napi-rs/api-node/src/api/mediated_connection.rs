@@ -70,21 +70,6 @@ pub async fn mediated_connection_create_with_invite(source_id: String, details: 
 }
 
 #[napi]
-pub async fn mediated_connection_create_with_connection_request(
-    request: String,
-    agent_handle: u32,
-) -> napi::Result<u32> {
-    trace!(
-        "mediated_connection_create_with_connection_request >>> request: {:?}, agent_handle: {:?}",
-        request,
-        agent_handle
-    );
-    mediated_connection::create_with_request(&request, agent_handle)
-        .await
-        .map_err(to_napi_err)
-}
-
-#[napi]
 pub async fn mediated_connection_send_message(handle: u32, msg: String) -> napi::Result<()> {
     trace!(
         "mediated_connection_send_message >>> handle: {:?}, msg: {:?}",

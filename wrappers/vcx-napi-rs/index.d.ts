@@ -80,7 +80,6 @@ export function mediatedConnectionGetState(handle: number): number
 export function mediatedConnectionGetSourceId(handle: number): string
 export function mediatedConnectionCreate(sourceId: string): Promise<number>
 export function mediatedConnectionCreateWithInvite(sourceId: string, details: string): Promise<number>
-export function mediatedConnectionCreateWithConnectionRequest(request: string, agentHandle: number): Promise<number>
 export function mediatedConnectionSendMessage(handle: number, msg: string): Promise<void>
 export function mediatedConnectionCreateWithConnectionRequestV2(request: string, pwInfo: string): Promise<number>
 export function mediatedConnectionSendHandshakeReuse(handle: number, oobMsg: string): Promise<void>
@@ -133,13 +132,6 @@ export function proofGetState(handle: number): number
 export function proofGetProofState(handle: number): number
 export function proofGetThreadId(handle: number): string
 export function markPresentationRequestMsgSent(handle: number): void
-export function publicAgentCreate(sourceId: string, institutionDid: string): Promise<number>
-export function publicAgentDownloadConnectionRequests(handle: number, uids?: string | undefined | null): Promise<string>
-export function publicAgentDownloadMessage(handle: number, uid: string): Promise<string>
-export function publicAgentGetService(handle: number): string
-export function publicAgentSerialize(handle: number): string
-export function publicAgentDeserialize(data: string): number
-export function publicAgentRelease(handle: number): void
 export function revocationRegistryCreate(config: string): Promise<number>
 export function revocationRegistryPublish(handle: number, tailsUrl: string): Promise<number>
 export function revocationRegistryPublishRevocations(handle: number): Promise<void>

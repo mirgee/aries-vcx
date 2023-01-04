@@ -83,11 +83,12 @@ module.exports.createFaber = async function createFaber () {
   }
 
   async function unpackMsg (encryptedMsg) {
-    logger.info('Faber is going to unpack message')
+    logger.info(`Faber is going to unpack message of length ${encryptedMsg.length}`)
     await vcxAgent.agentInitVcx()
 
-    const { message, sender_verkey: senderVerkey } = await unpack(encryptedMsg);
+    const { message, sender_verkey: senderVerkey } = await unpack(encryptedMsg)
 
+    logger.info(`Decrypted msg has length ${message.length}, sender verkey: ${senderVerkey}`)
     await vcxAgent.agentShutdownVcx()
 
     return { message, senderVerkey }

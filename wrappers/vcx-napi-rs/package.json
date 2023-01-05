@@ -1,6 +1,6 @@
 {
-  "name": "vcx-napi-rs",
-  "package": "vcx-napi-rs",
+  "name": "@hyperledger/vcx-napi-rs",
+  "package": "@hyperledger/vcx-napi-rs",
   "devDependencies": {
     "@napi-rs/cli": "^2.9.1",
     "@types/node": "^18.11.18",

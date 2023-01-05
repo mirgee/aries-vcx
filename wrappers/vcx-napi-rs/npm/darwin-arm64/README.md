@@ -1,3 +1,3 @@
-# `vcx-napi-rs-darwin-arm64`
+# `@hyperledger/vcx-napi-rs-darwin-arm64`
 
-This is the **aarch64-apple-darwin** binary for `vcx-napi-rs`
+This is the **aarch64-apple-darwin** binary for `@hyperledger/vcx-napi-rs`

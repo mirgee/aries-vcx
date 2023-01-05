@@ -1,5 +1,5 @@
 {
-  "name": "vcx-napi-rs-linux-x64-musl",
+  "name": "@hyperledger/vcx-napi-rs-linux-x64-musl",
   "os": [
     "linux"
   ],

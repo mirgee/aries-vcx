@@ -1,3 +1,3 @@
-# `undefined-linux-x64-musl`
+# `vcx-napi-rs-linux-x64-musl`
 
-This is the **x86_64-unknown-linux-musl** binary for `undefined`
+This is the **x86_64-unknown-linux-musl** binary for `vcx-napi-rs`

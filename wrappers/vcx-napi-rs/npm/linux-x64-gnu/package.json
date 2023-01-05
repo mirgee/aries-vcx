@@ -1,5 +1,5 @@
 {
-  "name": "undefined-linux-x64-gnu",
+  "name": "vcx-napi-rs-linux-x64-gnu",
   "os": [
     "linux"
   ],

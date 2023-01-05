@@ -167,17 +167,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "api-node"
-version = "0.50.0"
-dependencies = [
- "libvcx",
- "log",
- "napi",
- "napi-build",
- "napi-derive",
-]
-
-[[package]]
 name = "aries-vcx"
 version = "0.51.0"
 dependencies = [
@@ -3980,6 +3969,17 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+
+[[package]]
+name = "vcx-napi-rs"
+version = "0.50.0"
+dependencies = [
+ "libvcx",
+ "log",
+ "napi",
+ "napi-build",
+ "napi-derive",
+]
 
 [[package]]
 name = "version_check"

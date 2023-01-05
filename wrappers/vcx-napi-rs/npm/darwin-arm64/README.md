@@ -1,3 +1,3 @@
-# `undefined-darwin-arm64`
+# `vcx-napi-rs-darwin-arm64`
 
-This is the **aarch64-apple-darwin** binary for `undefined`
+This is the **aarch64-apple-darwin** binary for `vcx-napi-rs`

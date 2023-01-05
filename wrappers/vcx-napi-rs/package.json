@@ -1,4 +1,5 @@
 {
+  "name": "vcx-napi-rs",
   "package": "vcx-napi-rs",
   "devDependencies": {
     "@napi-rs/cli": "^2.9.1",
@@ -12,9 +13,9 @@
   ],
   "scripts": {
     "build:ts": "tsc -p ./tsconfig.json",
-    "build:napi": "napi build --platform --cargo-cwd ./api-node/ --release .",
-    "build:napi:debug": "napi build --platform --cargo-cwd ./api-node/ .",
-    "create-npm-dir": "napi create-npm-dir -t . -c ./package.json"
+    "build:napi": "napi build --platform --release",
+    "build:napi:debug": "napi build --platform",
+    "create-npm-dir": "napi create-npm-dir -t ."
   },
   "napi": {
     "name": "vcx-napi-rs",

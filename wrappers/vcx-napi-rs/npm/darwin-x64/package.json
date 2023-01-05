@@ -1,5 +1,5 @@
 {
-  "name": "undefined-darwin-x64",
+  "name": "vcx-napi-rs-darwin-x64",
   "os": [
     "darwin"
   ],

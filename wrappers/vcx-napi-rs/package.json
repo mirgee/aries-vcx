@@ -2,15 +2,22 @@
   "package": "vcx-napi-rs",
   "devDependencies": {
     "@napi-rs/cli": "^2.9.1",
+    "@types/node": "^18.11.18",
     "typescript": "^4.8.4"
   },
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
   "scripts": {
     "build:ts": "tsc -p ./tsconfig.json",
-    "build:napi": "napi build --cargo-cwd ./api-node/ --release .",
-    "build:napi:debug": "napi build --cargo-cwd ./api-node/ ."
+    "build:napi": "napi build --platform --cargo-cwd ./api-node/ --release .",
+    "build:napi:debug": "napi build --platform --cargo-cwd ./api-node/ .",
+    "create-npm-dir": "napi create-npm-dir -t . -c ./package.json"
   },
   "napi": {
-    "name": "index",
+    "name": "vcx-napi-rs",
     "triples": {
       "defaults": false,
       "additional": [

@@ -1,0 +1,16 @@
+{
+  "name": "undefined-linux-x64-gnu",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "vcx-napi-rs.linux-x64-gnu.node",
+  "files": [
+    "vcx-napi-rs.linux-x64-gnu.node"
+  ],
+  "libc": [
+    "glibc"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "undefined-darwin-arm64",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "vcx-napi-rs.darwin-arm64.node",
+  "files": [
+    "vcx-napi-rs.darwin-arm64.node"
+  ]
+}

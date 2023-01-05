@@ -14,7 +14,7 @@
   "scripts": {
     "build:ts": "tsc -p ./tsconfig.json",
     "build:napi": "napi build --platform --release",
-    "build:napi:debug": "napi build --platform",
+    "build:napi:debug": "napi build --platform --features test_utils",
     "create-npm-dir": "napi create-npm-dir -t ."
   },
   "napi": {

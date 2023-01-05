@@ -11,6 +11,9 @@ path = "src/lib.rs"
 crate-type = ["cdylib"]
 doctest = false
 
+[features]
+test_utils = [ "libvcx/test_utils" ]
+
 [dependencies]
 libvcx = { path = "../../libvcx", default-features = false }
 log = "0.4.16"

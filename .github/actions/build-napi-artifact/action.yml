@@ -1,0 +1,60 @@
+name: 'build-napi-artifact'
+description: |
+  Builds napi artifact using specified settings'
+
+inputs:
+  docker:
+    required: true
+  target:
+    required: true
+  build:
+    required: true
+
+env:
+  ARTIFACT_PATH_PREFIX: vcx-napi-rs
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup node
+      uses: actions/setup-node@v3
+      if: ${{ !inputs.docker }}
+      with:
+        node-version: 18
+        check-latest: true
+        cache: npm
+    - name: Install
+      uses: dtolnay/rust-toolchain@stable
+      if: ${{ !inputs.docker }}
+      with:
+        targets: ${{ inputs.target }}
+    - name: Cache cargo
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          .cargo-cache
+          target/
+        key: ${{ inputs.target }}-cargo-registry
+    - name: Install dependencies
+      run: npm install
+      shell: bash
+    - name: Build in docker
+      uses: addnab/docker-run-action@v3
+      if: ${{ inputs.docker }}
+      with:
+        image: ${{ inputs.docker }}
+        options: --user 0:0 -v ${{ github.workspace }}/.cargo-cache/git/db:/usr/local/cargo/git/db -v ${{ github.workspace }}/.cargo/registry/cache:/usr/local/cargo/registry/cache -v ${{ github.workspace }}/.cargo/registry/index:/usr/local/cargo/registry/index -v ${{ github.workspace }}:/build -w /build
+        run: ${{ inputs.build }}
+    - name: Build
+      run: ${{ inputs.build }}
+      if: ${{ !inputs.docker }}
+      shell: bash
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: bindings-${{ inputs.target }}
+        path: ${{ env.ARTIFACT_PATH_PREFIX }}.*.node
+        if-no-files-found: error

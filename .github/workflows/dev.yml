@@ -15,20 +15,17 @@ jobs:
     outputs:
       PUBLISH_VERSION: ${{ steps.run-info.outputs.publish-version }}
     steps:
-      - name: "Git checkout"
-        uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ env.RUST_TOOLCHAIN_VERSON }}
-      - name: "Construct CI run-info"
-        id: run-info
-        uses: ./.github/actions/construct-run-info
-  build-napi-artifacts:
+      - uses: ./.github/actions/construct-run-info
+  build:
     strategy:
       fail-fast: false
       matrix:
         settings:
-          - host: ubuntu-latest
+          - host: ubuntu-20.04
             target: x86_64-unknown-linux-gnu
             build: |-
               set -e
@@ -36,7 +33,7 @@ jobs:
               sudo apt-get install -y libssl-dev libzmq3-dev
               npm run build:napi -- --target x86_64-unknown-linux-gnu
               strip *.node
-          - host: ubuntu-latest
+          - host: ubuntu-20.04
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/hyperledger/aries-vcx/napi-rs-alpine
             build: |-
@@ -61,92 +58,29 @@ jobs:
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
               npm run build:napi
               strip -x *.node
-    name: 1.64.0 - ${{ matrix.settings.target }} - node@18 # Not possible to use envvars in this context ATM
+    name: ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ github.workspace }}/wrappers/vcx-napi-rs
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup node
-        uses: actions/setup-node@v3
-        if: ${{ !matrix.settings.docker }}
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: ${{ github.workspace }}/wrappers/vcx-napi-rs/package-lock.json
-      - name: Install
-        uses: actions-rs/toolchain@v1
-        if: ${{ !matrix.settings.docker }}
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN_VERSON }}
-          target: ${{ matrix.settings.target }}
-      - name: Cache cargo
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            .cargo-cache
-            target/
-          key: ${{ matrix.settings.target }}-cargo-registry
-      - name: Install dependencies
-        run: npm install
-      - name: Build in docker
-        uses: addnab/docker-run-action@v3
-        if: ${{ matrix.settings.docker }}
-        with:
-          image: ${{ matrix.settings.docker }}
-          options: -v /home/runner/.cargo/git/db:/root/.cargo/git/db -v /home/runner/.cargo/registry/cache:/root/.cargo/registry/cache -v /home/runner/.cargo/registry/index:/root/.cargo/registry/index -v ${{ github.workspace }}:/build -w /build
-          run: ${{ matrix.settings.build }}
-      - name: Build
-        run: ${{ matrix.settings.build }}
-        if: ${{ !matrix.settings.docker }}
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: bindings-${{ matrix.settings.target }}
-          path: ${{ github.workspace }}/wrappers/vcx-napi-rs/*.node
-          if-no-files-found: error
-  publish:
-    name: Publish
-    runs-on: ubuntu-latest
     needs:
       - workflow-setup
-      - build-napi-artifacts
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ github.workspace }}/wrappers/vcx-napi-rs
     steps:
       - uses: actions/checkout@v3
-      - name: Setup node
-        uses: actions/setup-node@v3
+      - uses: ./.github/actions/build-napi
         with:
+          docker: ${{ matrix.settings.docker }}
+          target: ${{ matrix.settings.target }}
+          build: ${{ matrix.settings.build }}
+          publish-version: ${{ needs.workflow-setup.outputs.PUBLISH_VERSION }}
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: ${{ github.workspace }}/wrappers/vcx-napi-rs/package-lock.json
-      - name: Install dependencies
-        run: npm install
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
+          rust-version: ${{ env.RUST_TOOLCHAIN_VERSON }}
+  publish:
+    runs-on: ubuntu-20.04
+    needs:
+      - workflow-setup
+      - build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/publish-napi
         with:
-          path: ${{ github.workspace }}/wrappers/vcx-napi-rs/artifacts
-      - name: Move artifacts
-        run: npm run artifacts
-      - name: Publish
-        run: |
-          if [[ "$PUBLISH_VERSION" ]]
-          then
-            npm set "//registry.npmjs.org/:_authToken" $NPMJS_TOKEN
-            npm version $PUBLISH_VERSION
-            npm run prepublish
-            npm publish
-          else
-             echo "New version was not defined, skipping release."
-          fi
-        env:
-          NPMJS_TOKEN: ${{ secrets.NPMJS_TOKEN }}
-          PUBLISH_VERSION: ${{needs.workflow-setup.outputs.PUBLISH_VERSION}}
+          publish-version: ${{ needs.workflow-setup.outputs.PUBLISH_VERSION }}
+          npmjs-token: ${{ secrets.NPMJS_TOKEN }}
+          node-version: ${{ env.NODE_VERSION }}

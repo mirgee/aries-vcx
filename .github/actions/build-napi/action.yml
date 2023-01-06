@@ -9,9 +9,10 @@ inputs:
     required: true
   build:
     required: true
-
-env:
-  ARTIFACT_PATH_PREFIX: vcx-napi-rs
+  node-version:
+    default: 18
+  rust-version:
+    default: 1.64.0
 
 runs:
   using: "composite"
@@ -20,14 +21,15 @@ runs:
       uses: actions/setup-node@v3
       if: ${{ !inputs.docker }}
       with:
-        node-version: 18
-        check-latest: true
+        node-version: ${{ inputs.node-version }}
         cache: npm
+        cache-dependency-path: ${{ github.workspace }}/wrappers/vcx-napi-rs/package-lock.json
     - name: Install
-      uses: dtolnay/rust-toolchain@stable
+      uses: actions-rs/toolchain@v1
       if: ${{ !inputs.docker }}
       with:
-        targets: ${{ inputs.target }}
+        toolchain: ${{ inputs.rust-version }}
+        target: ${{ inputs.target }}
     - name: Cache cargo
       uses: actions/cache@v3
       with:
@@ -40,21 +42,23 @@ runs:
         key: ${{ inputs.target }}-cargo-registry
     - name: Install dependencies
       run: npm install
+      working-directory: ${{ github.workspace }}/wrappers/vcx-napi-rs
       shell: bash
     - name: Build in docker
       uses: addnab/docker-run-action@v3
       if: ${{ inputs.docker }}
       with:
         image: ${{ inputs.docker }}
-        options: --user 0:0 -v ${{ github.workspace }}/.cargo-cache/git/db:/usr/local/cargo/git/db -v ${{ github.workspace }}/.cargo/registry/cache:/usr/local/cargo/registry/cache -v ${{ github.workspace }}/.cargo/registry/index:/usr/local/cargo/registry/index -v ${{ github.workspace }}:/build -w /build
+        options: -v /home/runner/.cargo/git/db:/root/.cargo/git/db -v /home/runner/.cargo/registry/cache:/root/.cargo/registry/cache -v /home/runner/.cargo/registry/index:/root/.cargo/registry/index -v ${{ github.workspace }}:/build -w /build
         run: ${{ inputs.build }}
     - name: Build
       run: ${{ inputs.build }}
       if: ${{ !inputs.docker }}
+      working-directory: ${{ github.workspace }}/wrappers/vcx-napi-rs
       shell: bash
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: bindings-${{ inputs.target }}
-        path: ${{ env.ARTIFACT_PATH_PREFIX }}.*.node
+        path: ${{ github.workspace }}/wrappers/vcx-napi-rs/*.node
         if-no-files-found: error

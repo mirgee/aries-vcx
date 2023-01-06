@@ -12,5 +12,11 @@
   ],
   "libc": [
     "musl"
-  ]
+  ],
+  "description": "aries-vcx napi",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  }
 }

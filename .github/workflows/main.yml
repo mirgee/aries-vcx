@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-    # pull_request:
-    #   branches:
-    #     - "**"
+  pull_request:
+    branches:
+      - "**"
 
 env:
   DOCKER_BUILDKIT: 1
@@ -745,6 +745,7 @@ jobs:
       - uses: ./.github/actions/publish-napi
         with:
           publish-version: ${{ needs.workflow-setup.outputs.PUBLISH_VERSION }}
+          npmjs-token: ${{ secrets.NPMJS_TOKEN }}
           node-version: ${{ env.NODE_VERSION }}
 
   #  ##########################################################################################

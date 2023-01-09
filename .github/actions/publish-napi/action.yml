@@ -30,6 +30,7 @@ runs:
     - name: Move artifacts
       run: |
         find . -type d -not -path \*\*/artifacts/bindings-\* -path \*\*/artifacts/\*\* -mindepth 2 -maxdepth 2 -exec rm -rf {} \+
+        ls -R artifacts
         npm run artifacts
       working-directory: ${{ github.workspace }}/wrappers/vcx-napi-rs
       shell: bash

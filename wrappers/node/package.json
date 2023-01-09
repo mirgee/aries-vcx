@@ -58,7 +58,7 @@
     "vcx-napi-rs": "../vcx-napi-rs"
   },
   "peerDependencies": {
-    "@hyperledger/vcx-napi-rs": "0.50.0-featurenapi-rs-separate-crate-4205"
+    "@hyperledger/vcx-napi-rs": "^0.50.0-featurenapi-rs-separate-crate-4208"
   },
   "scripts": {
     "tscversion": "tsc --version",

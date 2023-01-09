@@ -15,7 +15,7 @@
     "artifacts": "napi artifacts",
     "prepublish": "napi prepublish --skip-gh-release",
     "build:ts": "tsc -p ./tsconfig.json",
-    "build:napi": "napi build --platform --release",
+    "build:napi": "napi build --platform --release --features test_utils",
     "build:napi:debug": "napi build --platform --features test_utils",
     "create-npm-dir": "napi create-npm-dir -t ."
   },
@@ -32,7 +32,6 @@
     }
   },
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
   "contributors": [
@@ -45,5 +44,11 @@
     "url": "https://github.com/hyperledger/aries-vcx/issues"
   },
   "description": "aries-vcx napi",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "optionalDependencies": {
+    "@hyperledger/vcx-napi-rs-darwin-x64": "undefined",
+    "@hyperledger/vcx-napi-rs-darwin-arm64": "undefined",
+    "@hyperledger/vcx-napi-rs-linux-x64-gnu": "undefined",
+    "@hyperledger/vcx-napi-rs-linux-x64-musl": "undefined"
+  }
 }

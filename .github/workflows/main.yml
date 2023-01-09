@@ -720,7 +720,7 @@ jobs:
               export CXX=$(xcrun -f clang++);
               SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
-              npm run build:napi
+              npm run build:napi -- --target aarch64-apple-darwin
               strip -x *.node
     name: ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
@@ -731,7 +731,6 @@ jobs:
           docker: ${{ matrix.settings.docker }}
           target: ${{ matrix.settings.target }}
           build: ${{ matrix.settings.build }}
-          publish-version: ${{ needs.workflow-setup.outputs.PUBLISH_VERSION }}
           node-version: ${{ env.NODE_VERSION }}
           rust-version: ${{ env.RUST_TOOLCHAIN_VERSON }}
 

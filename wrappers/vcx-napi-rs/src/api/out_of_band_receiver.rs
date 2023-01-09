@@ -4,11 +4,6 @@ use vcx::api_vcx::api_handle::out_of_band;
 use crate::error::to_napi_err;
 
 #[napi]
-fn out_of_band_sender_create(config: String) -> napi::Result<u32> {
-    out_of_band::create_out_of_band(&config).map_err(to_napi_err)
-}
-
-#[napi]
 fn out_of_band_receiver_create(msg: String) -> napi::Result<u32> {
     out_of_band::create_out_of_band_msg_from_msg(&msg).map_err(to_napi_err)
 }

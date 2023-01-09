@@ -1,13 +1,8 @@
 use napi_derive::napi;
 
-use vcx::api_vcx::api_handle::{credential, proof};
+use vcx::api_vcx::api_handle::proof;
 
 use crate::error::to_napi_err;
-
-#[napi]
-fn credential_create_with_offer(source_id: String, offer: String) -> napi::Result<u32> {
-    credential::credential_create_with_offer(&source_id, &offer).map_err(to_napi_err)
-}
 
 #[napi]
 async fn proof_create(

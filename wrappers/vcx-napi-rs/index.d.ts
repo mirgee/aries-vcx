@@ -24,7 +24,6 @@ export function credentialGetTailsLocation(handle: number): string
 export function credentialGetTailsHash(handle: number): string
 export function credentialGetRevRegId(handle: number): string
 export function credentialGetThreadId(handle: number): string
-export function schemaDeserialize(serialized: string): number
 export function credentialdefCreateV2(sourceId: string, schemaId: string, tag: string, supportRevocation: boolean): Promise<number>
 export function credentialdefPublish(handle: number): Promise<void>
 export function credentialdefDeserialize(serialized: string): number
@@ -98,7 +97,6 @@ export function mediatedConnectionInfo(handle: number): Promise<string>
 export function mediatedConnectionMessagesDownload(connHandles: Array<number>, statusCodes?: string | undefined | null, uids?: string | undefined | null): Promise<string>
 export function mediatedConnectionSignData(handle: number, data: Buffer): Promise<Buffer>
 export function mediatedConnectionVerifySignature(handle: number, data: Buffer, signature: Buffer): Promise<boolean>
-export function outOfBandSenderCreate(config: string): number
 export function outOfBandReceiverCreate(msg: string): number
 export function outOfBandReceiverExtractMessage(handle: number): string
 export function outOfBandReceiverConnectionExists(handle: number, connHandles: Array<number>): Promise<number>
@@ -118,7 +116,6 @@ export function outOfBandSenderDeserialize(oobData: string): number
 export function outOfBandSenderRelease(handle: number): void
 export function openMainPool(poolConfig: string): Promise<void>
 export function closeMainPool(): Promise<void>
-export function credentialCreateWithOffer(sourceId: string, offer: string): number
 export function proofCreate(sourceId: string, requestedAttrs: string, requestedPredicates: string, revocationDetails: string, name: string): Promise<number>
 export function proofGetProofMsg(handle: number): string
 export function proofRelease(handle: number): void

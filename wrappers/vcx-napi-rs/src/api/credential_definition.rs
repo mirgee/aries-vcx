@@ -1,12 +1,7 @@
 use napi_derive::napi;
 
 use crate::error::to_napi_err;
-use vcx::api_vcx::api_handle::{credential_def, schema};
-
-#[napi]
-fn schema_deserialize(serialized: String) -> napi::Result<u32> {
-    schema::from_string(&serialized).map_err(to_napi_err)
-}
+use vcx::api_vcx::api_handle::credential_def;
 
 #[napi]
 async fn credentialdef_create_v2_(

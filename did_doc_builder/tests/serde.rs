@@ -77,23 +77,23 @@ fn test_deserialization() {
 
     assert_eq!(
         did_doc.id(),
-        &ParsedDID::from_str("did:web:did-actor-alice").unwrap()
+        &"did:web:did-actor-alice".to_string().try_into().unwrap()
     );
     assert_eq!(
         did_doc.also_known_as(),
         vec![Uri::from_str("https://example.com/user-profile/123").unwrap()]
     );
 
-    let controller = ParsedDID::from_str("did:web:did-actor-alice").unwrap();
+    let controller: ParsedDID = "did:web:did-actor-alice".to_string().try_into().unwrap();
 
-    let pk_id = ParsedDIDUrl::from_str(
-        "did:web:did-actor-alice#z6MkrmNwty5ajKtFqc1U48oL2MMLjWjartwc5sf2AihZwXDN",
+    let pk_id = ParsedDIDUrl::parse(
+        "did:web:did-actor-alice#z6MkrmNwty5ajKtFqc1U48oL2MMLjWjartwc5sf2AihZwXDN".to_string(),
     )
     .unwrap();
 
-    let vm1_id = ParsedDIDUrl::from_str("#g1").unwrap();
+    let vm1_id = ParsedDIDUrl::parse("#g1".to_string()).unwrap();
     let vm1 = VerificationMethodBuilder::new(
-        vm1_id.clone(),
+        vm1_id,
         controller.clone(),
         "JsonWebKey2020".to_string(),
     )
@@ -110,9 +110,9 @@ fn test_deserialization() {
     .build()
     .unwrap();
 
-    let vm2_id = ParsedDIDUrl::from_str("#g2").unwrap();
+    let vm2_id = ParsedDIDUrl::parse("#g2".to_string()).unwrap();
     let vm2 = VerificationMethodBuilder::new(
-        vm2_id.clone(),
+        vm2_id,
         controller.clone(),
         "JsonWebKey2020".to_string(),
     )
@@ -155,7 +155,7 @@ fn test_deserialization() {
     assert_eq!(
         did_doc.capability_invocation(),
         &[VerificationMethodAlias::VerificationMethodReference(
-            pk_id.clone()
+            pk_id
         )]
     );
 
@@ -174,13 +174,13 @@ fn test_deserialization() {
         )])
     );
 
-    let ka1_id = ParsedDIDUrl::from_str(
-        "did:web:did-actor-alice#zC8GybikEfyNaausDA4mkT4egP7SNLx2T1d1kujLQbcP6h",
+    let ka1_id = ParsedDIDUrl::parse(
+        "did:web:did-actor-alice#zC8GybikEfyNaausDA4mkT4egP7SNLx2T1d1kujLQbcP6h".to_string(),
     )
     .unwrap();
     let ka1 = VerificationMethodBuilder::new(
-        ka1_id.clone(),
-        controller.clone(),
+        ka1_id,
+        controller,
         "X25519KeyAgreementKey2019".to_string(),
     )
     .add_extra(

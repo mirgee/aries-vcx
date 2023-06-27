@@ -1,7 +1,8 @@
-mod numalgo;
-mod peer_did;
-mod regex;
-mod transform;
+pub mod generate;
+pub mod numalgos;
+pub mod peer_did;
 
-pub use numalgo::Numalgo;
-pub use peer_did::PeerDid;
+mod generic;
+mod parse;
+mod regex;
+mod validate;

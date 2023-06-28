@@ -81,6 +81,7 @@ mod tests {
         content.protocols.pop();
         content.protocols.pop();
         content.protocols.pop();
+        // content.protocols.pop();
 
         let dummy_protocol_descriptor = ProtocolDescriptor::new(MaybeKnown::Unknown("test_dummy_pid".to_owned()));
         content.protocols.push(dummy_protocol_descriptor);

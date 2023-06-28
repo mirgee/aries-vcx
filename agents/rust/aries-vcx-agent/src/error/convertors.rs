@@ -1,6 +1,10 @@
 use std::convert::From;
 
-use aries_vcx::errors::error::{AriesVcxError, AriesVcxErrorKind};
+use aries_vcx::{
+    did_doc::error::DidDocumentBuilderError,
+    did_doc_sov::error::DidDocumentSovError,
+    errors::error::{AriesVcxError, AriesVcxErrorKind},
+};
 use aries_vcx_core::errors::error::AriesVcxCoreError;
 
 use crate::error::*;
@@ -30,6 +34,30 @@ impl From<AriesVcxCoreError> for AgentError {
     fn from(err: AriesVcxCoreError) -> Self {
         let kind = AgentErrorKind::GenericAriesVcxError;
         let message = format!("AriesVcxCore Error; err: {:?}", err.to_string());
+        AgentError { message, kind }
+    }
+}
+
+impl From<DidDocumentSovError> for AgentError {
+    fn from(err: DidDocumentSovError) -> Self {
+        let kind = AgentErrorKind::GenericAriesVcxError;
+        let message = format!("DidDocumentSovError; err: {:?}", err.to_string());
+        AgentError { message, kind }
+    }
+}
+
+impl From<DidDocumentBuilderError> for AgentError {
+    fn from(err: DidDocumentBuilderError) -> Self {
+        let kind = AgentErrorKind::GenericAriesVcxError;
+        let message = format!("DidDocumentBuilderError; err: {:?}", err.to_string());
+        AgentError { message, kind }
+    }
+}
+
+impl From<aries_vcx::did_parser::ParseError> for AgentError {
+    fn from(err: aries_vcx::did_parser::ParseError) -> Self {
+        let kind = AgentErrorKind::GenericAriesVcxError;
+        let message = format!("DidParseError; err: {:?}", err.to_string());
         AgentError { message, kind }
     }
 }

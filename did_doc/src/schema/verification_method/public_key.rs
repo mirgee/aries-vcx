@@ -53,6 +53,11 @@ impl PublicKeyField {
             ),
         }
     }
+
+    // TODO: Other formats
+    pub fn base58(&self) -> Result<String, DidDocumentBuilderError> {
+        Ok(bs58::encode(self.key_decoded()?).into_string())
+    }
 }
 
 #[cfg(test)]

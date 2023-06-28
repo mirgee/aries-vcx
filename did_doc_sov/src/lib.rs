@@ -2,11 +2,14 @@ pub mod error;
 pub mod extra_fields;
 pub mod service;
 
+use std::collections::HashMap;
+
 use did_doc::{
     did_parser::{Did, DidUrl},
     schema::{
         did_doc::{ControllerAlias, DidDocument, DidDocumentBuilder},
         types::uri::Uri,
+        utils::OneOrList,
         verification_method::{VerificationMethod, VerificationMethodKind},
     },
 };
@@ -22,8 +25,8 @@ pub struct DidDocumentSov {
 }
 
 impl DidDocumentSov {
-    pub fn builder() -> DidDocumentSovBuilder {
-        DidDocumentSovBuilder::default()
+    pub fn builder(id: Did) -> DidDocumentSovBuilder {
+        DidDocumentSovBuilder::new(id)
     }
 
     pub fn id(&self) -> &Did {
@@ -75,7 +78,6 @@ impl DidDocumentSov {
     }
 }
 
-#[derive(Default)]
 pub struct DidDocumentSovBuilder {
     ddo_builder: DidDocumentBuilder<ExtraFieldsSov>,
     services: Vec<ServiceSov>,
@@ -137,5 +139,57 @@ impl<'de> Deserialize<'de> for DidDocumentSov {
             did_doc: temp.did_doc,
             services,
         })
+    }
+}
+
+impl From<DidDocumentSov> for DidDocument<ExtraFieldsSov> {
+    fn from(ddo: DidDocumentSov) -> Self {
+        let mut ddo_builder = DidDocument::<ExtraFieldsSov>::builder(ddo.did_doc.id().clone());
+        for service in ddo.service() {
+            ddo_builder = ddo_builder.add_service(service.clone().try_into().unwrap());
+        }
+        if let Some(controller) = ddo.did_doc.controller() {
+            match controller {
+                OneOrList::One(controller) => {
+                    ddo_builder = ddo_builder.add_controller(controller.clone());
+                }
+                OneOrList::List(list) => {
+                    for controller in list {
+                        ddo_builder = ddo_builder.add_controller(controller.clone());
+                    }
+                }
+            }
+        }
+        for vm in ddo.verification_method() {
+            ddo_builder = ddo_builder.add_verification_method(vm.clone());
+        }
+        ddo_builder.build()
+    }
+}
+
+impl From<DidDocument<ExtraFieldsSov>> for DidDocumentSov {
+    fn from(ddo: DidDocument<ExtraFieldsSov>) -> Self {
+        let mut builder = DidDocumentSov::builder(ddo.id().clone());
+        for service in ddo.service() {
+            builder = builder.add_service(service.clone().try_into().unwrap());
+        }
+        for vm in ddo.verification_method() {
+            builder = builder.add_verification_method(vm.clone());
+        }
+        // TODO: Controller
+        builder.build()
+    }
+}
+
+impl From<DidDocument<HashMap<String, Value>>> for DidDocumentSov {
+    fn from(ddo: DidDocument<HashMap<String, Value>>) -> Self {
+        let mut builder = DidDocumentSov::builder(ddo.id().clone());
+        for service in ddo.service() {
+            builder = builder.add_service(service.clone().try_into().unwrap());
+        }
+        for vm in ddo.verification_method() {
+            builder = builder.add_verification_method(vm.clone());
+        }
+        builder.build()
     }
 }

@@ -402,6 +402,12 @@ dependencies = [
  "bs58 0.4.0",
  "chrono",
  "derive_builder 0.10.2",
+ "did_doc",
+ "did_doc_sov",
+ "did_parser",
+ "did_peer",
+ "did_resolver",
+ "did_resolver_registry",
  "diddoc_legacy",
  "env_logger 0.9.3",
  "futures",
@@ -433,6 +439,9 @@ dependencies = [
  "aries_vcx_core",
  "async-trait",
  "derive_builder 0.11.2",
+ "did_peer",
+ "did_resolver_registry",
+ "did_resolver_sov",
  "log",
  "serde",
  "serde_json",
@@ -653,9 +662,9 @@ checksum = "ecc7ab41815b3c653ccd2978ec3255c81349336702dfdf62ee6f7069b12a3aae"
 
 [[package]]
 name = "async-trait"
-version = "0.1.68"
+version = "0.1.72"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9ccdd8f2a161be9bd5c023df56f1b2a0bd1d83872ae53b71a84a12c9bf6e842"
+checksum = "cc6dde6e4ed435a4c1ee4e73592f5ba9da2151af10076cc04858746af9352d09"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1695,6 +1704,8 @@ dependencies = [
  "async-trait",
  "did_resolver",
  "mockall",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 
@@ -3127,6 +3138,7 @@ version = "0.57.0"
 dependencies = [
  "chrono",
  "derive_more",
+ "did_doc_sov",
  "diddoc_legacy",
  "isolang",
  "lazy_static",

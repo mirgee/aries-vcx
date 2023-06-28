@@ -2,13 +2,23 @@ use std::sync::Arc;
 
 use aries_vcx::{
     agency_client::{agency_client::AgencyClient, configuration::AgentProvisionConfig},
+    common::ledger::{
+        service_didsov::{DidSovServiceType, EndpointDidSov},
+        transactions::{add_new_did, write_endpoint},
+    },
     core::profile::{profile::Profile, vdrtools_profile::VdrtoolsProfile},
     global::settings::init_issuer_config,
+    protocols::mediated_connection::pairwise_info::PairwiseInfo,
     utils::provision::provision_cloud_agent,
 };
 use aries_vcx_core::indy::{
     ledger::pool::{create_pool_ledger_config, indy_open_pool, PoolConfigBuilder},
     wallet::{create_wallet_with_master_secret, open_wallet, wallet_configure_issuer, WalletConfig},
+};
+use did_peer::peer_did_resolver::resolver::PeerDidResolver;
+use did_resolver_registry::{GenericMap, GenericResolver, ResolverRegistry};
+use did_resolver_sov::{
+    did_resolver::traits::resolvable::DidResolvable, reader::ConcreteAttrReader, resolution::DidSovResolver,
 };
 use url::Url;
 
@@ -18,9 +28,11 @@ use crate::{
     services::{
         connection::{ServiceConnections, ServiceEndpoint},
         credential_definition::ServiceCredentialDefinitions,
+        did_exchange::ServiceDidExchange,
         holder::ServiceCredentialsHolder,
         issuer::ServiceCredentialsIssuer,
         mediated_connection::ServiceMediatedConnections,
+        out_of_band::ServiceOutOfBand,
         prover::ServiceProver,
         revocation_registry::ServiceRevocationRegistries,
         schema::ServiceSchemas,
@@ -91,6 +103,30 @@ impl Agent {
         let profile: Arc<dyn Profile> = Arc::new(indy_profile);
         let wallet = profile.inject_wallet();
 
+        // TODO: Rename
+        let (requester_did, _verkey) = add_new_did(
+            &wallet,
+            &profile.inject_indy_ledger_write(),
+            &config_issuer.institution_did,
+            None,
+        )
+        .await?;
+        let endpoint = EndpointDidSov::create()
+            .set_service_endpoint(init_config.service_endpoint.clone())
+            .set_types(Some(vec![DidSovServiceType::Endpoint]));
+        write_endpoint(&profile.inject_indy_ledger_write(), &requester_did, &endpoint)
+            .await
+            .unwrap();
+
+        let did_peer_resolver = PeerDidResolver::new();
+        let did_sov_resolver =
+            DidSovResolver::new(Arc::<ConcreteAttrReader>::new(profile.inject_indy_ledger_read().into()));
+        let did_resolver_registry = Arc::new(
+            ResolverRegistry::new()
+                .register_resolver::<PeerDidResolver>("peer".into(), did_peer_resolver.into())
+                .register_resolver::<DidSovResolver>("sov".into(), did_sov_resolver.into()),
+        );
+
         let (mediated_connections, config_agency_client) = if let Some(agency_config) = init_config.agency_config {
             let config_provision_agent = AgentProvisionConfig {
                 agency_did: agency_config.agency_did,
@@ -115,6 +151,16 @@ impl Agent {
 
         let connections = Arc::new(ServiceConnections::new(
             Arc::clone(&profile),
+            init_config.service_endpoint.clone(),
+        ));
+        let did_exchange = Arc::new(ServiceDidExchange::new(
+            Arc::clone(&profile),
+            did_resolver_registry.clone(),
+            init_config.service_endpoint.clone(),
+            requester_did.clone(),
+        ));
+        let out_of_band = Arc::new(ServiceOutOfBand::new(
+            Arc::clone(&profile),
             init_config.service_endpoint,
         ));
         let schemas = Arc::new(ServiceSchemas::new(
@@ -134,7 +180,9 @@ impl Agent {
         Ok(Self {
             profile,
             connections,
+            did_exchange,
             mediated_connections,
+            out_of_band,
             schemas,
             cred_defs,
             rev_regs,
@@ -142,6 +190,7 @@ impl Agent {
             holder,
             verifier,
             prover,
+            requester_did,
             config: AgentConfig {
                 config_wallet,
                 config_issuer,

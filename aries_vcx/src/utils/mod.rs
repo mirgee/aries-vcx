@@ -113,6 +113,7 @@ pub async fn send_message_anonymously(
 }
 
 pub fn from_did_doc_sov_to_legacy(ddo: DidDocumentSov) -> VcxResult<AriesDidDoc> {
+    println!("Converting DID Doc to legacy format {:?}", ddo);
     let mut new_ddo = AriesDidDoc::default();
     new_ddo.id = ddo.id().to_string();
     new_ddo.set_service_endpoint(

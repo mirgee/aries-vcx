@@ -151,6 +151,7 @@ impl EncryptionEnvelope {
         } else {
             Self::_unpack_a2a_message(wallet, payload).await?
         };
+        println!("Decrypted message: {:?}", message);
         let a2a_message = serde_json::from_str(&message).map_err(|err| {
             AriesVcxError::from_msg(
                 AriesVcxErrorKind::InvalidJson,

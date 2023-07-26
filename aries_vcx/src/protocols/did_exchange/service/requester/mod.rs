@@ -26,7 +26,7 @@ use url::Url;
 use crate::{
     common::{
         keys::get_verkey_from_ledger,
-        ledger::transactions::{into_did_doc, resolve_service},
+        ledger::transactions::{into_did_doc, into_did_doc_1, resolve_service},
     },
     errors::error::AriesVcxError,
     handlers::util::AnyInvitation,
@@ -112,7 +112,7 @@ impl DidExchangeServiceRequester<RequestSent> {
                 .add_verification_method(vm)
                 .build()
         };
-        let their_did_document = into_did_doc(&ledger, &AnyInvitation::Oob(invitation.clone())).await?;
+        let their_did_document = into_did_doc_1(&ledger, &AnyInvitation::Oob(invitation.clone())).await?;
         let our_peer_did = generate_numalgo2(our_did_document.clone().into())?;
         let params = DidExchangeRequestParams {
             invitation_id: invitation.id.clone(),
@@ -133,7 +133,7 @@ impl DidExchangeServiceRequester<RequestSent> {
                     pw_did: our_peer_did.to_string(),
                     pw_vk: pairwise_info.pw_vk,
                 },
-                did_document: from_legacy_did_doc_to_sov(their_did_document)?,
+                did_document: their_did_document,
             },
             output: request,
         })

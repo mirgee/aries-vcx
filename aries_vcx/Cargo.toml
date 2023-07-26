@@ -30,6 +30,7 @@ shared_vcx = { path = "../shared_vcx" }
 did_parser = { path = "../did_parser" }
 did_resolver = { path = "../did_resolver" }
 did_doc = { path = "../did_doc" }
+did_key = { path = "../did_key" }
 did_doc_sov = { path = "../did_doc_sov" }
 did_peer = { path = "../did_peer" }
 did_resolver_registry = { path = "../did_resolver_registry" }

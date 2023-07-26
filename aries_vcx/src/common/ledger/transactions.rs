@@ -1,4 +1,8 @@
 use bs58;
+use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
+use did_doc_sov::extra_fields::KeyKind;
+use did_doc_sov::DidDocumentSov;
+use did_parser::Did;
 use diddoc_legacy::aries::diddoc::AriesDidDoc;
 use diddoc_legacy::aries::service::AriesService;
 use messages::msg_fields::protocols::connection::invitation::Invitation;
@@ -91,6 +95,40 @@ pub async fn add_new_did(
     Ok((did, verkey))
 }
 
+pub async fn into_did_doc_1(
+    indy_ledger: &Arc<dyn IndyLedgerRead>,
+    invitation: &AnyInvitation,
+) -> VcxResult<DidDocumentSov> {
+    let did: Did = invitation.get_id().parse().unwrap_or_default();
+    let mut builder = DidDocumentSov::builder(did.clone());
+    let service = match invitation {
+        AnyInvitation::Oob(invitation) => {
+            let service = match &invitation.content.services[0] {
+                OobService::SovService(service) => service,
+                _ => unimplemented!(),
+            };
+            service.clone()
+        }
+        _ => unimplemented!(),
+    };
+    let key = match service.extra().first_recipient_key()? {
+        KeyKind::DidKey(key) => key.key().clone(),
+        _ => unimplemented!(),
+    };
+    let verification_method = VerificationMethod::builder(
+        did.clone().into(),
+        did.clone(),
+        VerificationMethodType::Ed25519VerificationKey2018,
+    )
+    .add_public_key_base58(key.base58())
+    .build();
+    Ok(builder
+        .add_service(service)
+        .add_controller(did)
+        .add_verification_method(verification_method)
+        .build())
+}
+
 pub async fn into_did_doc(indy_ledger: &Arc<dyn IndyLedgerRead>, invitation: &AnyInvitation) -> VcxResult<AriesDidDoc> {
     let mut did_doc: AriesDidDoc = AriesDidDoc::default();
     let (service_endpoint, recipient_keys, routing_keys) = match invitation {
@@ -126,7 +164,7 @@ pub async fn into_did_doc(indy_ledger: &Arc<dyn IndyLedgerRead>, invitation: &An
                     error!("Failed to obtain service definition from the ledger: {}", err);
                     AriesService::default()
                 });
-            let recipient_keys = normalize_keys_as_naked(service.recipient_keys).unwrap_or_else(|err| {
+            let recipient_keys = normalize_keys_as_naked(service.clone().recipient_keys).unwrap_or_else(|err| {
                 error!("Is not did valid: {}", err);
                 Vec::new()
             });

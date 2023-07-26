@@ -61,3 +61,19 @@ impl From<aries_vcx::did_parser::ParseError> for AgentError {
         AgentError { message, kind }
     }
 }
+
+impl From<public_key::PublicKeyError> for AgentError {
+    fn from(err: public_key::PublicKeyError) -> Self {
+        let kind = AgentErrorKind::GenericAriesVcxError;
+        let message = format!("PublicKeyError; err: {:?}", err.to_string());
+        AgentError { message, kind }
+    }
+}
+
+impl From<did_key::error::DidKeyError> for AgentError {
+    fn from(err: did_key::error::DidKeyError) -> Self {
+        let kind = AgentErrorKind::GenericAriesVcxError;
+        let message = format!("DidKeyError; err: {:?}", err.to_string());
+        AgentError { message, kind }
+    }
+}

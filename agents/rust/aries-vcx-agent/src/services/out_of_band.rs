@@ -9,10 +9,16 @@ use aries_vcx::{
     handlers::out_of_band::{receiver::OutOfBandReceiver, sender::OutOfBandSender, GenericOutOfBand},
     messages::{
         msg_fields::protocols::out_of_band::invitation::{Invitation as OobInvitation, OobService},
+        msg_types::{
+            out_of_band::{OutOfBandType, OutOfBandTypeV1, OutOfBandTypeV1_1},
+            protocols::did_exchange::{DidExchangeType, DidExchangeTypeV1, DidExchangeTypeV1_0},
+            Protocol,
+        },
         AriesMessage,
     },
     protocols::mediated_connection::pairwise_info::PairwiseInfo,
 };
+use public_key::{Key, KeyType};
 use uuid::Uuid;
 
 use crate::{
@@ -39,17 +45,22 @@ impl ServiceOutOfBand {
 
     pub async fn create_invitation(&self) -> AgentResult<AriesMessage> {
         let pw_info = PairwiseInfo::create(&self.profile.inject_wallet()).await?;
+        let public_key = Key::new(bs58::decode(pw_info.pw_vk).into_vec().unwrap(), KeyType::Ed25519)?;
         let service = {
             let service_id = Uuid::new_v4().to_string();
             ServiceSov::DIDCommV1(ServiceDidCommV1::new(
                 service_id.parse()?,
                 self.service_endpoint.to_owned().into(),
                 ExtraFieldsDidCommV1::builder()
-                    .set_recipient_keys(vec![KeyKind::Value(pw_info.pw_vk)])
+                    .set_recipient_keys(vec![KeyKind::DidKey(public_key.try_into()?)])
                     .build(),
             )?)
         };
-        let sender = OutOfBandSender::create().append_service(&OobService::SovService(service));
+        let sender = OutOfBandSender::create()
+            .append_service(&OobService::SovService(service))
+            .append_handshake_protocol(Protocol::DidExchangeType(DidExchangeType::V1(
+                DidExchangeTypeV1::new_v1_0(),
+            )))?;
 
         self.out_of_band
             .insert(&sender.get_id(), GenericOutOfBand::Sender(sender.to_owned()))?;

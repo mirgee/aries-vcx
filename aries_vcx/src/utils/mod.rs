@@ -11,6 +11,7 @@ use did_doc_sov::service::aip1::ServiceAIP1;
 use did_doc_sov::service::didcommv1::ServiceDidCommV1;
 use did_doc_sov::service::ServiceSov;
 use did_doc_sov::DidDocumentSov;
+use did_key::DidKey;
 use did_parser::Did;
 use diddoc_legacy::aries::diddoc::AriesDidDoc;
 use diddoc_legacy::aries::service::AriesService;
@@ -154,7 +155,13 @@ pub fn from_legacy_service_to_service_sov(service: AriesService) -> VcxResult<Se
                 .recipient_keys
                 .iter()
                 .map(String::to_owned)
-                .map(KeyKind::Value)
+                .map(|s| {
+                    if s.starts_with("did:key:") {
+                        KeyKind::DidKey(DidKey::parse(s).unwrap())
+                    } else {
+                        KeyKind::Value(s)
+                    }
+                })
                 .collect(),
         )
         .set_routing_keys(
@@ -162,7 +169,13 @@ pub fn from_legacy_service_to_service_sov(service: AriesService) -> VcxResult<Se
                 .routing_keys
                 .iter()
                 .map(String::to_owned)
-                .map(KeyKind::Value)
+                .map(|s| {
+                    if s.starts_with("did:key:") {
+                        KeyKind::DidKey(DidKey::parse(s).unwrap())
+                    } else {
+                        KeyKind::Value(s)
+                    }
+                })
                 .collect(),
         )
         .build();

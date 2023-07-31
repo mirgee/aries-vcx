@@ -81,6 +81,7 @@ impl DidExchangeRequester<RequestSent> {
         let request = Request::with_decorators(request_id.clone(), params.clone().into(), decorators);
         // TODO: If the provided DID is not resolvable, we need to add DDO (signed with a keyAgreement key?)
         // But the request is sent encrypted!
+        println!("Constructed request: {:?}", request);
         Ok(TransitionResult {
             state: DidExchangeRequester::from_parts(
                 Requester,

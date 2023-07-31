@@ -62,10 +62,23 @@ impl DidExchangeServiceResponder<ResponseSent> {
         };
         let peer_did = generate_numalgo2(our_ddo.into())?;
 
+        let did: Did = peer_did.clone().into();
+        let did_url: DidUrl = did.clone().into();
+        let our_ddo = {
+            let vm =
+                VerificationMethod::builder(did_url, did.clone(), VerificationMethodType::Ed25519VerificationKey2018)
+                    .add_public_key_base58(pairwise_info.pw_vk.clone())
+                    .build();
+            DidDocumentSov::builder(did)
+                .add_service(service.clone())
+                .add_verification_method(vm)
+                .build()
+        };
+
         let params = DidExchangeResponseParams {
             request,
             did: peer_did.clone().into(),
-            did_doc: None,
+            did_doc: Some(our_ddo),
             invitation_id,
         };
         let TransitionResult { state, output } = DidExchangeResponder::<ResponseSent>::construct_response(params)?;

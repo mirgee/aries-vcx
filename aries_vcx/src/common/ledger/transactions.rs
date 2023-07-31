@@ -1,6 +1,7 @@
 use bs58;
 use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
 use did_doc_sov::extra_fields::KeyKind;
+use did_doc_sov::service::ServiceSov;
 use did_doc_sov::DidDocumentSov;
 use did_parser::Did;
 use diddoc_legacy::aries::diddoc::AriesDidDoc;
@@ -11,7 +12,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::common::ledger::service_didsov::EndpointDidSov;
 use crate::handlers::util::AnyInvitation;
-use crate::utils::from_service_sov_to_legacy;
+use crate::utils::{from_legacy_service_to_service_sov, from_service_sov_to_legacy};
 use aries_vcx_core::ledger::base_ledger::{IndyLedgerRead, IndyLedgerWrite};
 use aries_vcx_core::wallet::base_wallet::BaseWallet;
 use serde_json::Value;
@@ -101,10 +102,11 @@ pub async fn into_did_doc_1(
 ) -> VcxResult<DidDocumentSov> {
     let did: Did = invitation.get_id().parse().unwrap_or_default();
     let mut builder = DidDocumentSov::builder(did.clone());
-    let service = match invitation {
+    let service: ServiceSov = match invitation {
         AnyInvitation::Oob(invitation) => {
             let service = match &invitation.content.services[0] {
-                OobService::SovService(service) => service,
+                OobService::SovService(service) => service.clone(),
+                OobService::AriesService(service) => from_legacy_service_to_service_sov(service.clone())?,
                 _ => unimplemented!(),
             };
             service.clone()

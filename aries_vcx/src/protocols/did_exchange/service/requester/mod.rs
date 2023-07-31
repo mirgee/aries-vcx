@@ -4,7 +4,7 @@ use aries_vcx_core::{ledger::base_ledger::IndyLedgerRead, wallet::base_wallet::B
 use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
 use did_doc_sov::{
     extra_fields::{didcommv2::ExtraFieldsDidCommV2, KeyKind},
-    service::{didcommv2::ServiceDidCommV2, ServiceSov},
+    service::{aip1::ServiceAIP1, didcommv2::ServiceDidCommV2, ServiceSov},
     DidDocumentSov,
 };
 use did_parser::Did;
@@ -117,10 +117,11 @@ impl DidExchangeServiceRequester<RequestSent> {
         let params = DidExchangeRequestParams {
             invitation_id: invitation.id.clone(),
             label: invitation.content.label.unwrap_or_default().clone(),
-            goal: invitation.content.goal.clone(),
-            goal_code: invitation.content.goal_code.map(map_goal_code),
+            // Must be non-empty
+            goal: Some("To establish a connection".to_string()),
+            goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
             did: our_peer_did.clone().into(),
-            did_doc: None,
+            did_doc: Some(our_did_document),
         };
         let TransitionResult {
             state: sm,
@@ -162,9 +163,9 @@ impl DidExchangeServiceRequester<RequestSent> {
         let params = DidExchangeRequestParams {
             invitation_id,
             label: "".to_string(),
-            goal: None,
-            goal_code: None,
-            did: their_did.clone(),
+            goal: Some("To establish a connection".to_string()),
+            goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
+            did: our_did.clone(),
             did_doc: None,
         };
         let TransitionResult {

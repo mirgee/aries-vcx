@@ -4,7 +4,7 @@ use aries_vcx::{
     core::profile::profile::Profile,
     did_doc_sov::{
         extra_fields::didcommv2::ExtraFieldsDidCommV2,
-        service::{didcommv2::ServiceDidCommV2, ServiceSov},
+        service::{didcommv1::ServiceDidCommV1, didcommv2::ServiceDidCommV2, ServiceSov},
         DidDocumentSov,
     },
     errors::error::{AriesVcxError, AriesVcxErrorKind, VcxResult},
@@ -125,7 +125,7 @@ impl ServiceDidExchange {
             .thread
             .clone()
             .map_or(request.id.clone(), |thread| thread.pthid.unwrap());
-        let service = ServiceSov::DIDCommV2(ServiceDidCommV2::new(
+        let service = ServiceSov::DIDCommV1(ServiceDidCommV1::new(
             Uuid::new_v4().to_string().parse()?,
             self.service_endpoint.clone().into(),
             Default::default(),

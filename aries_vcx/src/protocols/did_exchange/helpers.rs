@@ -25,16 +25,17 @@ pub fn attach_to_ddo_sov(attachment: Attachment) -> Result<DidDocumentSov, Aries
                     format!("Attachment is not base 64 encoded: {attachment:?}"),
                 )
             })?;
-            let res: AriesDidDoc = serde_json::from_slice(&bytes).map_err(|err| {
-                AriesVcxError::from_msg(
-                    AriesVcxErrorKind::SerializationError,
-                    format!("Attachment is not base 64 encoded JSON: {attachment:?}, err: {err:?}"),
-                )
-            })?;
-            println!("Deserialized base 64 attachment as AriesDidDoc: {:?}", res);
-            let res = from_legacy_did_doc_to_sov(res)?;
-            println!("Converted from AriesDidDoc to DidDocSov: {:?}", res);
-            Ok(res)
+            if let Ok(ddo) = serde_json::from_slice::<DidDocumentSov>(&bytes) {
+                return Ok(ddo);
+            } else {
+                let res: AriesDidDoc = serde_json::from_slice(&bytes).map_err(|err| {
+                    AriesVcxError::from_msg(
+                        AriesVcxErrorKind::SerializationError,
+                        format!("Attachment is not base 64 encoded JSON: {attachment:?}, err: {err:?}"),
+                    )
+                })?;
+                from_legacy_did_doc_to_sov(res)
+            }
         }
         _ => Err(AriesVcxError::from_msg(
             AriesVcxErrorKind::InvalidJson,

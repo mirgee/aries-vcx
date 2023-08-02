@@ -101,6 +101,11 @@ impl DidDocumentSovBuilder {
         self
     }
 
+    pub fn add_key_agreement(mut self, key_agreement: VerificationMethod) -> Self {
+        self.ddo_builder = self.ddo_builder.add_key_agreement(key_agreement);
+        self
+    }
+
     pub fn add_service(mut self, service: ServiceSov) -> Self {
         self.services.push(service);
         self
@@ -163,6 +168,13 @@ impl From<DidDocumentSov> for DidDocument<ExtraFieldsSov> {
         for vm in ddo.verification_method() {
             ddo_builder = ddo_builder.add_verification_method(vm.clone());
         }
+        for ka in ddo.key_agreement() {
+            if let VerificationMethodKind::Resolved(ka) = ka {
+                ddo_builder = ddo_builder.add_key_agreement(ka.clone());
+            } else {
+                todo!("Handle unresolved key agreement");
+            }
+        }
         ddo_builder.build()
     }
 }
@@ -175,6 +187,13 @@ impl From<DidDocument<ExtraFieldsSov>> for DidDocumentSov {
         }
         for vm in ddo.verification_method() {
             builder = builder.add_verification_method(vm.clone());
+        }
+        for ka in ddo.key_agreement() {
+            if let VerificationMethodKind::Resolved(ka) = ka {
+                builder = builder.add_key_agreement(ka.clone());
+            } else {
+                todo!("Handle unresolved key agreement");
+            }
         }
         // TODO: Controller
         builder.build()
@@ -189,6 +208,13 @@ impl From<DidDocument<HashMap<String, Value>>> for DidDocumentSov {
         }
         for vm in ddo.verification_method() {
             builder = builder.add_verification_method(vm.clone());
+        }
+        for ka in ddo.key_agreement() {
+            if let VerificationMethodKind::Resolved(ka) = ka {
+                builder = builder.add_key_agreement(ka.clone());
+            } else {
+                todo!("Handle unresolved key agreement");
+            }
         }
         builder.build()
     }

@@ -15,6 +15,7 @@ use did_key::DidKey;
 use did_parser::Did;
 use diddoc_legacy::aries::diddoc::AriesDidDoc;
 use diddoc_legacy::aries::service::AriesService;
+use public_key::{Key, KeyType};
 
 use crate::errors::error::{AriesVcxError, AriesVcxErrorKind, VcxResult};
 use crate::utils::encryption_envelope::EncryptionEnvelope;
@@ -113,8 +114,19 @@ pub async fn send_message_anonymously(
     Ok(())
 }
 
+fn vm_method_type_to_key_type(vm_type: &VerificationMethodType) -> KeyType {
+    match vm_type {
+        VerificationMethodType::Ed25519VerificationKey2018 | VerificationMethodType::Ed25519VerificationKey2020 => {
+            KeyType::Ed25519
+        }
+        VerificationMethodType::X25519KeyAgreementKey2019 | VerificationMethodType::X25519KeyAgreementKey2020 => {
+            KeyType::X25519
+        }
+        _ => todo!(),
+    }
+}
+
 pub fn from_did_doc_sov_to_legacy(ddo: DidDocumentSov) -> VcxResult<AriesDidDoc> {
-    println!("Converting DID Doc to legacy format {:?}", ddo);
     let mut new_ddo = AriesDidDoc::default();
     new_ddo.id = ddo.id().to_string();
     new_ddo.set_service_endpoint(
@@ -126,7 +138,12 @@ pub fn from_did_doc_sov_to_legacy(ddo: DidDocumentSov) -> VcxResult<AriesDidDoc>
             .into(),
     );
     if let Some(vm) = ddo.verification_method().first() {
-        new_ddo.set_recipient_keys(vec![vm.public_key().base58()?]);
+        let key = Key::new(
+            vm.public_key().key_decoded()?,
+            vm_method_type_to_key_type(vm.verification_method_type()),
+        )
+        .unwrap();
+        new_ddo.set_recipient_keys(vec![key.base58()]);
     }
     Ok(new_ddo)
 }

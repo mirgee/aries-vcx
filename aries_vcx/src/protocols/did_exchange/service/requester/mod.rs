@@ -3,10 +3,11 @@ use std::sync::Arc;
 use aries_vcx_core::{ledger::base_ledger::IndyLedgerRead, wallet::base_wallet::BaseWallet};
 use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
 use did_doc_sov::{
-    extra_fields::{didcommv2::ExtraFieldsDidCommV2, KeyKind},
-    service::{aip1::ServiceAIP1, didcommv2::ServiceDidCommV2, ServiceSov},
+    extra_fields::{didcommv1::ExtraFieldsDidCommV1, didcommv2::ExtraFieldsDidCommV2, KeyKind},
+    service::{aip1::ServiceAIP1, didcommv1::ServiceDidCommV1, didcommv2::ServiceDidCommV2, ServiceSov},
     DidDocumentSov,
 };
+use did_key::DidKey;
 use did_parser::Did;
 use did_peer::{peer_did::generate::generate_numalgo2, peer_did_resolver::resolver::PeerDidResolver};
 use did_resolver::traits::resolvable::DidResolvable;
@@ -20,6 +21,7 @@ use messages::{
         },
     },
 };
+use public_key::{Key, KeyType};
 use shared_vcx::maybe_known::MaybeKnown;
 use url::Url;
 
@@ -92,24 +94,35 @@ impl DidExchangeServiceRequester<RequestSent> {
         let pairwise_info = PairwiseInfo::create(&wallet).await?;
         let our_temp_did: Did = format!("did:sov:{}", pairwise_info.pw_did).parse()?;
         let our_did_document = {
-            let extra = ExtraFieldsDidCommV2::builder()
+            // We must send DIDCommV1
+            let vm_ver = VerificationMethod::builder(
+                our_temp_did.clone().into(),
+                our_temp_did.clone(),
+                VerificationMethodType::Ed25519VerificationKey2020,
+            )
+            .add_public_key_base58(pairwise_info.pw_vk.clone())
+            .build();
+            let vm_ka = VerificationMethod::builder(
+                our_temp_did.clone().into(),
+                our_temp_did.clone(),
+                VerificationMethodType::X25519KeyAgreementKey2020,
+            )
+            .add_public_key_base58(pairwise_info.pw_vk.clone())
+            .build();
+            let key = Key::new(vm_ver.public_key().key_decoded().unwrap(), KeyType::X25519).unwrap();
+            let extra = ExtraFieldsDidCommV1::builder()
                 .set_routing_keys(routing_keys.into_iter().map(KeyKind::Value).collect())
+                .set_recipient_keys(vec![KeyKind::DidKey(key.try_into().unwrap())])
                 .build();
-            let service = ServiceSov::DIDCommV2(ServiceDidCommV2::new(
+            let service = ServiceSov::DIDCommV1(ServiceDidCommV1::new(
                 Default::default(),
                 service_endpoint.into(),
                 extra,
             )?);
-            let vm = VerificationMethod::builder(
-                our_temp_did.clone().into(),
-                our_temp_did.clone(),
-                VerificationMethodType::Ed25519VerificationKey2018,
-            )
-            .add_public_key_base58(pairwise_info.pw_vk.clone())
-            .build();
             DidDocumentSov::builder(our_temp_did)
                 .add_service(service)
-                .add_verification_method(vm)
+                .add_verification_method(vm_ver.clone())
+                .add_key_agreement(vm_ka)
                 .build()
         };
         let their_did_document = into_did_doc_1(&ledger, &AnyInvitation::Oob(invitation.clone())).await?;

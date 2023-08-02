@@ -111,14 +111,23 @@ impl EncryptionEnvelope {
             payload.len()
         );
 
-        let unpacked_msg = wallet.unpack_message(&payload).await?;
+        trace!("Unpacking message {}", String::from_utf8_lossy(&payload));
+        let unpacked_msg = wallet.unpack_message(&payload).await.map_err(|err| {
+            error!("Cannot unpack message: {}", err);
+            AriesVcxError::from_msg(
+                AriesVcxErrorKind::InvalidJson,
+                format!("Cannot unpack message: {}", err),
+            )
+        })?;
 
+        trace!("Message unpacked");
         let msg_value: serde_json::Value = serde_json::from_slice(unpacked_msg.as_slice()).map_err(|err| {
             AriesVcxError::from_msg(
                 AriesVcxErrorKind::InvalidJson,
                 format!("Cannot deserialize message: {}", err),
             )
         })?;
+        trace!("EncryptionEnvelope::_unpack_a2a_message >>> msg_value: {:?}", msg_value);
 
         let sender_vk = msg_value["sender_verkey"].as_str().map(String::from);
 
@@ -151,7 +160,6 @@ impl EncryptionEnvelope {
         } else {
             Self::_unpack_a2a_message(wallet, payload).await?
         };
-        println!("Decrypted message: {:?}", message);
         let a2a_message = serde_json::from_str(&message).map_err(|err| {
             AriesVcxError::from_msg(
                 AriesVcxErrorKind::InvalidJson,

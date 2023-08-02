@@ -422,6 +422,7 @@ dependencies = [
  "log",
  "messages",
  "openssl",
+ "public_key",
  "rand 0.7.3",
  "regex",
  "serde",

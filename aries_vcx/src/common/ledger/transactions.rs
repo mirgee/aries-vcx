@@ -96,12 +96,9 @@ pub async fn add_new_did(
     Ok((did, verkey))
 }
 
-pub async fn into_did_doc_1(
-    indy_ledger: &Arc<dyn IndyLedgerRead>,
-    invitation: &AnyInvitation,
-) -> VcxResult<DidDocumentSov> {
+pub async fn into_did_doc_1(invitation: &AnyInvitation) -> VcxResult<DidDocumentSov> {
     let did: Did = invitation.get_id().parse().unwrap_or_default();
-    let mut builder = DidDocumentSov::builder(did.clone());
+    let builder = DidDocumentSov::builder(did.clone());
     let service: ServiceSov = match invitation {
         AnyInvitation::Oob(invitation) => {
             let service = match &invitation.content.services[0] {

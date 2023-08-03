@@ -92,9 +92,13 @@ impl DidExchangeServiceRequester<RequestSent> {
     ) -> Result<TransitionResult<Self, Request>, AriesVcxError> {
         // TODO: We don't need the whole PairwiseInfo, just the verkey
         let pairwise_info = PairwiseInfo::create(&wallet).await?;
-        let our_temp_did: Did = format!("did:sov:{}", pairwise_info.pw_did).parse()?;
         let our_did_document = {
+            let our_temp_did: Did = format!("did:sov:{}", pairwise_info.pw_did).parse()?;
             // We must send DIDCommV1
+            // This is retarded. We must create two ver. methods using the same key, then take the
+            // key bytes to generate Key, then use IT to create a DidKey to set as recipient key in
+            // the service to use in the DDO which is used to create the peer did to send in the
+            // request.
             let vm_ver = VerificationMethod::builder(
                 our_temp_did.clone().into(),
                 our_temp_did.clone(),
@@ -125,12 +129,12 @@ impl DidExchangeServiceRequester<RequestSent> {
                 .add_key_agreement(vm_ka)
                 .build()
         };
-        let their_did_document = into_did_doc_1(&ledger, &AnyInvitation::Oob(invitation.clone())).await?;
+        let their_did_document = into_did_doc_1(&AnyInvitation::Oob(invitation.clone())).await?;
         let our_peer_did = generate_numalgo2(our_did_document.clone().into())?;
         let params = DidExchangeRequestParams {
             invitation_id: invitation.id.clone(),
             label: invitation.content.label.unwrap_or_default().clone(),
-            // Must be non-empty
+            // Must be non-empty for some reason
             goal: Some("To establish a connection".to_string()),
             goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
             did: our_peer_did.clone().into(),
@@ -158,7 +162,7 @@ impl DidExchangeServiceRequester<RequestSent> {
         PublicConstructRequestConfig { their_did, our_did }: PublicConstructRequestConfig,
     ) -> Result<TransitionResult<Self, Request>, AriesVcxError> {
         let service = resolve_service(&ledger, &OobService::Did(their_did.id().to_string())).await?;
-        // TODO: If it's on the ledger but in the wallet, we have a problem
+        // TODO: If it's on the ledger but in the wallet, we may not know it but we have a problem
         let our_verkey = get_verkey_from_ledger(&ledger, &our_did.id().to_string()).await?;
         let vm = VerificationMethod::builder(
             their_did.clone().into(),

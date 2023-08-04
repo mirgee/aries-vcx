@@ -59,6 +59,7 @@ pub enum OobService {
     // TODO: DidCommV2 and AIP2 services don't include recipient keys
     // and if service id is not a resolvable did (it must be just a URI)
     // then there is no way to resolve the recipient keys
+    // must be missing something
     SovService(ServiceSov),
     AriesService(AriesService),
     Did(String),

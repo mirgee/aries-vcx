@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{default, sync::Arc};
 
 use aries_vcx_core::{ledger::base_ledger::IndyLedgerRead, wallet::base_wallet::BaseWallet};
 use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
@@ -9,8 +9,12 @@ use did_doc_sov::{
 };
 use did_key::DidKey;
 use did_parser::Did;
-use did_peer::{peer_did::generate::generate_numalgo2, peer_did_resolver::resolver::PeerDidResolver};
+use did_peer::{
+    peer_did::{generate::generate_numalgo2, numalgos::numalgo2::Numalgo2, peer_did::PeerDid},
+    peer_did_resolver::resolver::PeerDidResolver,
+};
 use did_resolver::traits::resolvable::DidResolvable;
+use diddoc_legacy::aries::service::AriesService;
 use messages::{
     decorators::thread::ThreadGoalCode,
     msg_fields::protocols::{
@@ -28,9 +32,9 @@ use url::Url;
 use crate::{
     common::{
         keys::get_verkey_from_ledger,
-        ledger::transactions::{into_did_doc, into_did_doc_1, resolve_service},
+        ledger::transactions::{into_did_doc, resolve_service},
     },
-    errors::error::AriesVcxError,
+    errors::error::{AriesVcxError, AriesVcxErrorKind},
     handlers::util::AnyInvitation,
     protocols::{
         did_exchange::{
@@ -46,7 +50,7 @@ use crate::{
     utils::{from_legacy_did_doc_to_sov, from_legacy_service_to_service_sov},
 };
 
-use super::DidExchangeService;
+use super::{construct_service, did_doc_from_keys, generate_keypair, DidExchangeService};
 
 pub type DidExchangeServiceRequester<S> = DidExchangeService<Requester, S>;
 
@@ -78,9 +82,61 @@ pub enum ConstructRequestConfig {
     Public(PublicConstructRequestConfig),
 }
 
+async fn create_our_did_document(
+    wallet: &Arc<dyn BaseWallet>,
+    service_endpoint: Url,
+    routing_keys: Vec<String>,
+) -> Result<DidDocumentSov, AriesVcxError> {
+    let key_ver = generate_keypair(wallet, KeyType::Ed25519).await?;
+    let key_enc = generate_keypair(wallet, KeyType::X25519).await?;
+    let service = construct_service(
+        routing_keys.into_iter().map(KeyKind::Value).collect(),
+        vec![KeyKind::DidKey(key_enc.clone().try_into().unwrap())],
+        service_endpoint,
+    )?;
+    Ok(did_doc_from_keys(Default::default(), key_ver, key_enc, service))
+}
+
+fn verify_handshake_protocol(invitation: OobInvitation) -> Result<(), AriesVcxError> {
+    invitation
+        .content
+        .handshake_protocols
+        .unwrap()
+        .iter()
+        .find(|protocol| match protocol {
+            MaybeKnown::Known(protocol) if protocol.to_string().contains("didexchange") => true,
+            _ => false,
+        })
+        .ok_or(AriesVcxError::from_msg(
+            AriesVcxErrorKind::InvalidState,
+            "Invitation does not contain didexchange handshake protocol",
+        ))?;
+    Ok(())
+}
+
+async fn their_did_doc_from_did(
+    ledger: &Arc<dyn IndyLedgerRead>,
+    their_did: Did,
+) -> Result<(DidDocumentSov, ServiceSov), AriesVcxError> {
+    let service = resolve_service(ledger, &OobService::Did(their_did.id().to_string())).await?;
+    let vm = VerificationMethod::builder(
+        their_did.clone().into(),
+        their_did.clone(),
+        VerificationMethodType::Ed25519VerificationKey2020,
+    )
+    // TODO: Make it easier to get the first key in base58 (regardless of initial kind) from ServiceSov
+    .add_public_key_base58(service.recipient_keys.first().unwrap().clone())
+    .build();
+    let sov_service = from_legacy_service_to_service_sov(service.clone())?;
+    let their_did_document = DidDocumentSov::builder(their_did.clone())
+        .add_service(sov_service.clone())
+        .add_controller(their_did)
+        .add_verification_method(vm)
+        .build();
+    Ok((their_did_document, sov_service))
+}
+
 impl DidExchangeServiceRequester<RequestSent> {
-    // TODO: The invitation must contain didexchage handshake protocol
-    #[allow(dead_code, unused)]
     async fn construct_request_pairwise(
         ledger: Arc<dyn IndyLedgerRead>,
         PairwiseConstructRequestConfig {
@@ -90,50 +146,14 @@ impl DidExchangeServiceRequester<RequestSent> {
             invitation,
         }: PairwiseConstructRequestConfig,
     ) -> Result<TransitionResult<Self, Request>, AriesVcxError> {
-        // TODO: We don't need the whole PairwiseInfo, just the verkey
-        let pairwise_info = PairwiseInfo::create(&wallet).await?;
-        let our_did_document = {
-            let our_temp_did: Did = format!("did:sov:{}", pairwise_info.pw_did).parse()?;
-            // We must send DIDCommV1
-            // This is retarded. We must create two ver. methods using the same key, then take the
-            // key bytes to generate Key, then use IT to create a DidKey to set as recipient key in
-            // the service to use in the DDO which is used to create the peer did to send in the
-            // request.
-            let vm_ver = VerificationMethod::builder(
-                our_temp_did.clone().into(),
-                our_temp_did.clone(),
-                VerificationMethodType::Ed25519VerificationKey2020,
-            )
-            .add_public_key_base58(pairwise_info.pw_vk.clone())
-            .build();
-            let vm_ka = VerificationMethod::builder(
-                our_temp_did.clone().into(),
-                our_temp_did.clone(),
-                VerificationMethodType::X25519KeyAgreementKey2020,
-            )
-            .add_public_key_base58(pairwise_info.pw_vk.clone())
-            .build();
-            let key = Key::new(vm_ver.public_key().key_decoded().unwrap(), KeyType::X25519).unwrap();
-            let extra = ExtraFieldsDidCommV1::builder()
-                .set_routing_keys(routing_keys.into_iter().map(KeyKind::Value).collect())
-                .set_recipient_keys(vec![KeyKind::DidKey(key.try_into().unwrap())])
-                .build();
-            let service = ServiceSov::DIDCommV1(ServiceDidCommV1::new(
-                Default::default(),
-                service_endpoint.into(),
-                extra,
-            )?);
-            DidDocumentSov::builder(our_temp_did)
-                .add_service(service)
-                .add_verification_method(vm_ver.clone())
-                .add_key_agreement(vm_ka)
-                .build()
-        };
-        let their_did_document = into_did_doc_1(&AnyInvitation::Oob(invitation.clone())).await?;
+        verify_handshake_protocol(invitation.clone())?;
+        let our_did_document = create_our_did_document(&wallet, service_endpoint, routing_keys).await?;
+        let their_did_document =
+            from_legacy_did_doc_to_sov(into_did_doc(&ledger, &AnyInvitation::Oob(invitation.clone())).await?)?;
         let our_peer_did = generate_numalgo2(our_did_document.clone().into())?;
         let params = DidExchangeRequestParams {
-            invitation_id: invitation.id.clone(),
-            label: invitation.content.label.unwrap_or_default().clone(),
+            invitation_id: invitation.id,
+            label: "".to_string(),
             // Must be non-empty for some reason
             goal: Some("To establish a connection".to_string()),
             goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
@@ -147,11 +167,11 @@ impl DidExchangeServiceRequester<RequestSent> {
         Ok(TransitionResult {
             state: Self {
                 sm,
-                pairwise_info: PairwiseInfo {
+                our_verkey: PairwiseInfo {
                     pw_did: our_peer_did.to_string(),
-                    pw_vk: pairwise_info.pw_vk,
+                    pw_vk: PairwiseInfo::create(&wallet).await?.pw_vk, // TODO: Store whole ddo
                 },
-                did_document: their_did_document,
+                their_did_document,
             },
             output: request,
         })
@@ -161,24 +181,9 @@ impl DidExchangeServiceRequester<RequestSent> {
         ledger: Arc<dyn IndyLedgerRead>,
         PublicConstructRequestConfig { their_did, our_did }: PublicConstructRequestConfig,
     ) -> Result<TransitionResult<Self, Request>, AriesVcxError> {
-        let service = resolve_service(&ledger, &OobService::Did(their_did.id().to_string())).await?;
-        // TODO: If it's on the ledger but in the wallet, we may not know it but we have a problem
-        let our_verkey = get_verkey_from_ledger(&ledger, &our_did.id().to_string()).await?;
-        let vm = VerificationMethod::builder(
-            their_did.clone().into(),
-            their_did.clone(),
-            VerificationMethodType::Ed25519VerificationKey2018,
-        )
-        .add_public_key_base58(service.recipient_keys.first().unwrap().clone())
-        .build();
-        let their_did_document = DidDocumentSov::builder(their_did.clone())
-            .add_service(from_legacy_service_to_service_sov(service.clone())?)
-            .add_controller(their_did.clone())
-            .add_verification_method(vm)
-            .build();
-        let invitation_id = format!("{}#{}", their_did, service.id);
+        let (their_did_document, service) = their_did_doc_from_did(&ledger, their_did.clone()).await?;
         let params = DidExchangeRequestParams {
-            invitation_id,
+            invitation_id: format!("{}#{}", their_did, service.id().to_string()),
             label: "".to_string(),
             goal: Some("To establish a connection".to_string()),
             goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
@@ -192,11 +197,12 @@ impl DidExchangeServiceRequester<RequestSent> {
         Ok(TransitionResult {
             state: Self {
                 sm,
-                pairwise_info: PairwiseInfo {
+                our_verkey: PairwiseInfo {
                     pw_did: their_did.to_string(),
-                    pw_vk: our_verkey,
+                    // TODO: Get it from wallet instead
+                    pw_vk: get_verkey_from_ledger(&ledger, &our_did.id().to_string()).await?,
                 },
-                did_document: their_did_document,
+                their_did_document,
             },
             output: request,
         })
@@ -233,8 +239,8 @@ impl DidExchangeServiceRequester<RequestSent> {
         Ok(TransitionResult {
             state: DidExchangeServiceRequester {
                 sm,
-                pairwise_info: self.pairwise_info,
-                did_document,
+                our_verkey: self.our_verkey,
+                their_did_document: did_document,
             },
             output: complete,
         })
@@ -243,6 +249,6 @@ impl DidExchangeServiceRequester<RequestSent> {
 
 impl DidExchangeServiceRequester<Completed> {
     pub fn to_record(self) -> ConnectionRecord {
-        ConnectionRecord::from_parts(self.did_document, self.pairwise_info)
+        ConnectionRecord::from_parts(self.their_did_document, self.our_verkey)
     }
 }

@@ -7,7 +7,8 @@ use did_parser::Did;
 use diddoc_legacy::aries::diddoc::AriesDidDoc;
 use diddoc_legacy::aries::service::AriesService;
 use messages::msg_fields::protocols::connection::invitation::Invitation;
-use messages::msg_fields::protocols::out_of_band::invitation::OobService;
+use messages::msg_fields::protocols::out_of_band::invitation::{Invitation as OobInvitation, OobService};
+use public_key::Key;
 use std::{collections::HashMap, sync::Arc};
 
 use crate::common::ledger::service_didsov::EndpointDidSov;
@@ -94,38 +95,6 @@ pub async fn add_new_did(
     check_response(&res)?;
 
     Ok((did, verkey))
-}
-
-pub async fn into_did_doc_1(invitation: &AnyInvitation) -> VcxResult<DidDocumentSov> {
-    let did: Did = invitation.get_id().parse().unwrap_or_default();
-    let builder = DidDocumentSov::builder(did.clone());
-    let service: ServiceSov = match invitation {
-        AnyInvitation::Oob(invitation) => {
-            let service = match &invitation.content.services[0] {
-                OobService::SovService(service) => service.clone(),
-                OobService::AriesService(service) => from_legacy_service_to_service_sov(service.clone())?,
-                _ => unimplemented!(),
-            };
-            service.clone()
-        }
-        _ => unimplemented!(),
-    };
-    let key = match service.extra().first_recipient_key()? {
-        KeyKind::DidKey(key) => key.key().clone(),
-        _ => unimplemented!(),
-    };
-    let verification_method = VerificationMethod::builder(
-        did.clone().into(),
-        did.clone(),
-        VerificationMethodType::Ed25519VerificationKey2018,
-    )
-    .add_public_key_base58(key.base58())
-    .build();
-    Ok(builder
-        .add_service(service)
-        .add_controller(did)
-        .add_verification_method(verification_method)
-        .build())
 }
 
 pub async fn into_did_doc(indy_ledger: &Arc<dyn IndyLedgerRead>, invitation: &AnyInvitation) -> VcxResult<AriesDidDoc> {

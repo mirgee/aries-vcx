@@ -3,16 +3,14 @@ use std::sync::Arc;
 use aries_vcx::{
     core::profile::profile::Profile,
     did_doc_sov::{
-        extra_fields::didcommv2::ExtraFieldsDidCommV2,
-        service::{didcommv1::ServiceDidCommV1, didcommv2::ServiceDidCommV2, ServiceSov},
+        service::{didcommv1::ServiceDidCommV1, ServiceSov},
         DidDocumentSov,
     },
     errors::error::{AriesVcxError, AriesVcxErrorKind, VcxResult},
-    handlers::out_of_band::sender::OutOfBandSender,
     messages::{
         msg_fields::protocols::{
             did_exchange::{complete::Complete, request::Request, response::Response},
-            out_of_band::invitation::{Invitation as OobInvitation, OobService},
+            out_of_band::invitation::Invitation as OobInvitation,
         },
         AriesMessage,
     },
@@ -80,9 +78,6 @@ impl ServiceDidExchange {
             config,
         )
         .await?;
-        let id = self
-            .did_exchange
-            .insert(&Uuid::new_v4().to_string(), requester.clone().into())?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &request.clone().into(),
@@ -90,7 +85,8 @@ impl ServiceDidExchange {
             requester.their_did_doc(),
         )
         .await?;
-        Ok(id)
+        self.did_exchange
+            .insert(&Uuid::new_v4().to_string(), requester.clone().into())
     }
 
     pub async fn send_request_pairwise(&self, invitation: OobInvitation) -> AgentResult<String> {
@@ -108,7 +104,6 @@ impl ServiceDidExchange {
             config,
         )
         .await?;
-        let id = self.did_exchange.insert(&invitation.id, requester.clone().into())?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &request.clone().into(),
@@ -116,15 +111,13 @@ impl ServiceDidExchange {
             requester.their_did_doc(),
         )
         .await?;
-        Ok(id)
+        self.did_exchange.insert(&invitation.id, requester.clone().into())
     }
 
-    pub async fn send_response(&self, request: Request) -> AgentResult<String> {
-        let invitation_id = request
-            .decorators
-            .thread
-            .clone()
-            .map_or(request.id.clone(), |thread| thread.pthid.unwrap());
+    pub async fn send_response(&self, request: Request, invitation_id: String) -> AgentResult<String> {
+        // TODO: We should fetch the out of band invite associated with the request.
+        // We don't want to be sending response if we don't know if there is any invitation
+        // associated with the request.
         let service = ServiceSov::DIDCommV1(ServiceDidCommV1::new(
             Uuid::new_v4().to_string().parse()?,
             self.service_endpoint.clone().into(),
@@ -138,10 +131,9 @@ impl ServiceDidExchange {
             &self.resolver_registry.clone(),
             request,
             service,
-            invitation_id.to_string(),
+            invitation_id,
         )
         .await?;
-        let id = self.did_exchange.insert(&response.id, responder.clone().into())?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &response.clone().into(),
@@ -149,7 +141,7 @@ impl ServiceDidExchange {
             responder.their_did_doc(),
         )
         .await?;
-        Ok(id)
+        self.did_exchange.insert(&response.id, responder.clone().into())
     }
 
     // TODO: Should it take the thread_id from the response? Prly not

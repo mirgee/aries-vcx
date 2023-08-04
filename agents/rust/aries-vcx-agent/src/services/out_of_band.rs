@@ -71,17 +71,15 @@ impl ServiceOutOfBand {
     pub fn receive_invitation(&self, invitation: AriesMessage) -> AgentResult<String> {
         let receiver = OutOfBandReceiver::create_from_a2a_msg(&invitation)?;
 
-        let id = receiver.get_id();
-        self.out_of_band.insert(&id, GenericOutOfBand::Receiver(receiver))?;
-
-        Ok(id)
+        self.out_of_band
+            .insert(&receiver.get_id(), GenericOutOfBand::Receiver(receiver))
     }
 
     pub fn get_invitation(&self, invitation_id: &str) -> AgentResult<OobInvitation> {
         let out_of_band = self.out_of_band.get(invitation_id)?;
         match out_of_band {
-            GenericOutOfBand::Sender(sender) => Ok(sender.oob.clone()),
-            GenericOutOfBand::Receiver(receiver) => Ok(receiver.oob.clone()),
+            GenericOutOfBand::Sender(sender) => Ok(sender.oob),
+            GenericOutOfBand::Receiver(receiver) => Ok(receiver.oob),
         }
     }
 

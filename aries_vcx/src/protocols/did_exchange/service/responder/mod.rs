@@ -2,11 +2,12 @@ use std::sync::Arc;
 
 use aries_vcx_core::wallet::base_wallet::BaseWallet;
 use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
-use did_doc_sov::{service::ServiceSov, DidDocumentSov};
+use did_doc_sov::{extra_fields::KeyKind, service::ServiceSov, DidDocumentSov};
 use did_parser::{Did, DidUrl};
 use did_peer::peer_did::generate::generate_numalgo2;
 use did_resolver_registry::ResolverRegistry;
 use messages::msg_fields::protocols::did_exchange::{complete::Complete, request::Request, response::Response};
+use public_key::KeyType;
 
 use crate::{
     errors::error::AriesVcxError,
@@ -16,6 +17,7 @@ use crate::{
             initiation_type::Responder,
             protocol::responder::{DidExchangeResponder, DidExchangeResponseParams},
             record::ConnectionRecord,
+            service::{did_doc_from_keys, generate_keypair},
             states::{completed::Completed, responder::response_sent::ResponseSent},
             transition::transition_result::TransitionResult,
         },
@@ -27,53 +29,49 @@ use super::DidExchangeService;
 
 pub type DidExchangeServiceResponder<S> = DidExchangeService<Responder, S>;
 
+async fn create_our_did_document(
+    wallet: &Arc<dyn BaseWallet>,
+    service: ServiceSov,
+) -> Result<(DidDocumentSov, Did), AriesVcxError> {
+    let key_ver = generate_keypair(wallet, KeyType::Ed25519).await?;
+    let key_enc = generate_keypair(wallet, KeyType::X25519).await?;
+
+    let did_document_temp = did_doc_from_keys(Default::default(), key_ver.clone(), key_enc.clone(), service.clone());
+    let peer_did = generate_numalgo2(did_document_temp.into())?;
+
+    Ok((
+        did_doc_from_keys(peer_did.clone().into(), key_ver, key_enc, service),
+        peer_did.into(),
+    ))
+}
+
+async fn resolve_their_ddo(
+    resolver_registry: &Arc<ResolverRegistry>,
+    request: &Request,
+) -> Result<DidDocumentSov, AriesVcxError> {
+    if let Some(ddo) = request.content.did_doc.clone().map(attach_to_ddo_sov).transpose()? {
+        Ok(ddo)
+    } else {
+        Ok(resolver_registry
+            .resolve(&request.content.did.parse()?, &Default::default())
+            .await?
+            .did_document()
+            .to_owned()
+            .into())
+    }
+}
+
 impl DidExchangeServiceResponder<ResponseSent> {
     pub async fn receive_request(
         wallet: &Arc<dyn BaseWallet>,
         resolver_registry: &Arc<ResolverRegistry>,
         request: Request,
+        // TODO: We need just the service endpoint and routing keys
         service: ServiceSov,
         invitation_id: String,
     ) -> Result<TransitionResult<DidExchangeServiceResponder<ResponseSent>, Response>, AriesVcxError> {
-        let pairwise_info = PairwiseInfo::create(wallet).await?;
-        let their_ddo = if let Some(ddo) = request.content.did_doc.clone().map(attach_to_ddo_sov).transpose()? {
-            ddo
-        } else {
-            resolver_registry
-                .resolve(&request.content.did.parse()?, &Default::default())
-                .await?
-                .did_document()
-                .to_owned()
-                .into()
-        };
-
-        // This is just to make the parsing work
-        let did: Did = format!("did:sov:{}", pairwise_info.pw_did).parse()?;
-        let did_url: DidUrl = did.clone().into();
-        let our_ddo = {
-            let vm =
-                VerificationMethod::builder(did_url, did.clone(), VerificationMethodType::Ed25519VerificationKey2018)
-                    .add_public_key_base58(pairwise_info.pw_vk.clone())
-                    .build();
-            DidDocumentSov::builder(did)
-                .add_service(service.clone())
-                .add_verification_method(vm)
-                .build()
-        };
-        let peer_did = generate_numalgo2(our_ddo.into())?;
-
-        let did: Did = peer_did.clone().into();
-        let did_url: DidUrl = did.clone().into();
-        let our_ddo = {
-            let vm =
-                VerificationMethod::builder(did_url, did.clone(), VerificationMethodType::Ed25519VerificationKey2018)
-                    .add_public_key_base58(pairwise_info.pw_vk.clone())
-                    .build();
-            DidDocumentSov::builder(did)
-                .add_service(service.clone())
-                .add_verification_method(vm)
-                .build()
-        };
+        let their_ddo = resolve_their_ddo(resolver_registry, &request).await?;
+        let (our_ddo, peer_did) = create_our_did_document(wallet, service.clone()).await?;
 
         let params = DidExchangeResponseParams {
             request,
@@ -88,7 +86,7 @@ impl DidExchangeServiceResponder<ResponseSent> {
                 their_ddo,
                 PairwiseInfo {
                     pw_did: peer_did.to_string(),
-                    pw_vk: pairwise_info.pw_vk,
+                    pw_vk: PairwiseInfo::create(wallet).await?.pw_vk,
                 },
             ),
             output,
@@ -101,14 +99,14 @@ impl DidExchangeServiceResponder<ResponseSent> {
         let state = self.sm.receive_complete(complete)?;
         Ok(DidExchangeService::from_parts(
             state,
-            self.did_document,
-            self.pairwise_info,
+            self.their_did_document,
+            self.our_verkey,
         ))
     }
 }
 
 impl DidExchangeServiceResponder<Completed> {
     pub fn to_record(self) -> ConnectionRecord {
-        ConnectionRecord::from_parts(self.did_document, self.pairwise_info)
+        ConnectionRecord::from_parts(self.their_did_document, self.our_verkey)
     }
 }

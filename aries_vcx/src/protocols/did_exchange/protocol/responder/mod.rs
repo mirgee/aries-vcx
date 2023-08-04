@@ -38,10 +38,14 @@ pub struct DidExchangeResponseParams {
 
 impl DidExchangeResponder<ResponseSent> {
     pub fn construct_response(
-        params: DidExchangeResponseParams,
+        DidExchangeResponseParams {
+            request,
+            did,
+            did_doc,
+            invitation_id,
+        }: DidExchangeResponseParams,
     ) -> Result<TransitionResult<ResponseSent, Response>, AriesVcxError> {
-        // TODO: Improve this check
-        if params.request.decorators.thread.and_then(|t| t.pthid) != Some(params.invitation_id.clone()) {
+        if request.decorators.thread.and_then(|t| t.pthid) != Some(invitation_id.clone()) {
             return Err(AriesVcxError::from_msg(
                 AriesVcxErrorKind::InvalidState,
                 "Parent thread ID of the request does not match the id of the invite",
@@ -50,22 +54,22 @@ impl DidExchangeResponder<ResponseSent> {
         // TODO The DDO must be signed by the pw vk in the recipient keys of the invitation
         // (probably use a new trait for this)
         let content = ResponseContent {
-            did: params.did.to_string(),
-            did_doc: params.did_doc.clone().map(ddo_sov_to_attach),
+            did: did.to_string(),
+            did_doc: did_doc.clone().map(ddo_sov_to_attach),
         };
         let thread = {
-            let mut thread = Thread::new(params.request.id.clone());
-            thread.pthid = Some(params.invitation_id.clone());
+            let mut thread = Thread::new(request.id.clone());
+            thread.pthid = Some(invitation_id.clone());
             thread
         };
         let decorators = ResponseDecorators { thread, timing: None };
-        let response = Response::with_decorators(params.request.id.clone(), content, decorators);
+        let response = Response::with_decorators(request.id.clone(), content, decorators);
         Ok(TransitionResult {
             state: DidExchangeResponder::from_parts(
                 Responder,
                 ResponseSent {
-                    invitation_id: params.invitation_id,
-                    request_id: params.request.id,
+                    invitation_id,
+                    request_id: request.id,
                 },
             ),
             output: response,

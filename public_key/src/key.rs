@@ -58,6 +58,14 @@ impl Key {
         })
     }
 
+    pub fn from_base58(base58: &str, key_type: KeyType) -> Result<Self, PublicKeyError> {
+        let decoded_bytes = bs58::decode(base58).into_vec()?;
+        Ok(Self {
+            key_type,
+            key: decoded_bytes,
+        })
+    }
+
     fn strip_multicodec_prefix_if_present(key: Vec<u8>, key_type: &KeyType) -> Vec<u8> {
         if let Ok((value, remaining)) = unsigned_varint::decode::u64(&key) {
             if value == Into::<u64>::into(key_type) {

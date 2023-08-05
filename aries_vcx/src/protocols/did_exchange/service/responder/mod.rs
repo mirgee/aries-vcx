@@ -7,7 +7,7 @@ use did_parser::{Did, DidUrl};
 use did_peer::peer_did::generate::generate_numalgo2;
 use did_resolver_registry::ResolverRegistry;
 use messages::msg_fields::protocols::did_exchange::{complete::Complete, request::Request, response::Response};
-use public_key::KeyType;
+use public_key::{Key, KeyType};
 
 use crate::{
     errors::error::AriesVcxError,
@@ -32,7 +32,7 @@ pub type DidExchangeServiceResponder<S> = DidExchangeService<Responder, S>;
 async fn create_our_did_document(
     wallet: &Arc<dyn BaseWallet>,
     service: ServiceSov,
-) -> Result<(DidDocumentSov, Did), AriesVcxError> {
+) -> Result<(DidDocumentSov, Did, Key), AriesVcxError> {
     let key_ver = generate_keypair(wallet, KeyType::Ed25519).await?;
     let key_enc = generate_keypair(wallet, KeyType::X25519).await?;
 
@@ -40,8 +40,9 @@ async fn create_our_did_document(
     let peer_did = generate_numalgo2(did_document_temp.into())?;
 
     Ok((
-        did_doc_from_keys(peer_did.clone().into(), key_ver, key_enc, service),
+        did_doc_from_keys(peer_did.clone().into(), key_ver, key_enc.clone(), service),
         peer_did.into(),
+        key_enc,
     ))
 }
 
@@ -71,7 +72,7 @@ impl DidExchangeServiceResponder<ResponseSent> {
         invitation_id: String,
     ) -> Result<TransitionResult<DidExchangeServiceResponder<ResponseSent>, Response>, AriesVcxError> {
         let their_ddo = resolve_their_ddo(resolver_registry, &request).await?;
-        let (our_ddo, peer_did) = create_our_did_document(wallet, service.clone()).await?;
+        let (our_ddo, peer_did, enc_key) = create_our_did_document(wallet, service.clone()).await?;
 
         let params = DidExchangeResponseParams {
             request,
@@ -81,14 +82,7 @@ impl DidExchangeServiceResponder<ResponseSent> {
         };
         let TransitionResult { state, output } = DidExchangeResponder::<ResponseSent>::construct_response(params)?;
         Ok(TransitionResult {
-            state: DidExchangeService::from_parts(
-                state,
-                their_ddo,
-                PairwiseInfo {
-                    pw_did: peer_did.to_string(),
-                    pw_vk: PairwiseInfo::create(wallet).await?.pw_vk,
-                },
-            ),
+            state: DidExchangeService::from_parts(state, their_ddo, enc_key),
             output,
         })
     }

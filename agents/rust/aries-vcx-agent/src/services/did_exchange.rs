@@ -31,6 +31,7 @@ use aries_vcx::{
 };
 use aries_vcx_core::wallet::base_wallet::BaseWallet;
 use did_resolver_registry::ResolverRegistry;
+use public_key::Key;
 use uuid::Uuid;
 
 use crate::{
@@ -181,13 +182,13 @@ impl ServiceDidExchange {
 pub(crate) async fn wrap_and_send_msg(
     wallet: &Arc<dyn BaseWallet>,
     message: &AriesMessage,
-    sender_verkey: &str,
+    sender_verkey: &Key,
     did_doc: &DidDocumentSov,
 ) -> VcxResult<()> {
     let env = EncryptionEnvelope::create(
         wallet,
         message,
-        Some(sender_verkey),
+        Some(&sender_verkey.base58()),
         &from_did_doc_sov_to_legacy(did_doc.to_owned())?,
     )
     .await?;

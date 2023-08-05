@@ -36,13 +36,13 @@ use super::protocol::DidExchangeProtocol;
 #[derive(Debug, Clone, PartialEq)]
 pub struct DidExchangeService<I, S> {
     sm: DidExchangeProtocol<I, S>,
-    our_verkey: PairwiseInfo,
+    our_verkey: Key,
     their_did_document: DidDocumentSov,
 }
 
 impl<I, S> DidExchangeService<I, S> {
-    pub fn our_verkey(&self) -> &str {
-        &self.our_verkey.pw_vk
+    pub fn our_verkey(&self) -> &Key {
+        &self.our_verkey
     }
 
     pub fn their_did_doc(&self) -> &DidDocumentSov {
@@ -51,14 +51,10 @@ impl<I, S> DidExchangeService<I, S> {
 }
 
 impl<I, S> DidExchangeService<I, S> {
-    pub fn from_parts(
-        sm: DidExchangeProtocol<I, S>,
-        their_did_document: DidDocumentSov,
-        pairwise_info: PairwiseInfo,
-    ) -> Self {
+    pub fn from_parts(sm: DidExchangeProtocol<I, S>, their_did_document: DidDocumentSov, our_verkey: Key) -> Self {
         Self {
             sm,
-            our_verkey: pairwise_info,
+            our_verkey,
             their_did_document,
         }
     }

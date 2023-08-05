@@ -86,7 +86,7 @@ async fn create_our_did_document(
     wallet: &Arc<dyn BaseWallet>,
     service_endpoint: Url,
     routing_keys: Vec<String>,
-) -> Result<DidDocumentSov, AriesVcxError> {
+) -> Result<(DidDocumentSov, Key), AriesVcxError> {
     let key_ver = generate_keypair(wallet, KeyType::Ed25519).await?;
     let key_enc = generate_keypair(wallet, KeyType::X25519).await?;
     let service = construct_service(
@@ -94,7 +94,10 @@ async fn create_our_did_document(
         vec![KeyKind::DidKey(key_enc.clone().try_into().unwrap())],
         service_endpoint,
     )?;
-    Ok(did_doc_from_keys(Default::default(), key_ver, key_enc, service))
+    Ok((
+        did_doc_from_keys(Default::default(), key_ver, key_enc.clone(), service),
+        key_enc,
+    ))
 }
 
 fn verify_handshake_protocol(invitation: OobInvitation) -> Result<(), AriesVcxError> {
@@ -147,7 +150,7 @@ impl DidExchangeServiceRequester<RequestSent> {
         }: PairwiseConstructRequestConfig,
     ) -> Result<TransitionResult<Self, Request>, AriesVcxError> {
         verify_handshake_protocol(invitation.clone())?;
-        let our_did_document = create_our_did_document(&wallet, service_endpoint, routing_keys).await?;
+        let (our_did_document, our_verkey) = create_our_did_document(&wallet, service_endpoint, routing_keys).await?;
         let their_did_document =
             from_legacy_did_doc_to_sov(into_did_doc(&ledger, &AnyInvitation::Oob(invitation.clone())).await?)?;
         let our_peer_did = generate_numalgo2(our_did_document.clone().into())?;
@@ -167,10 +170,7 @@ impl DidExchangeServiceRequester<RequestSent> {
         Ok(TransitionResult {
             state: Self {
                 sm,
-                our_verkey: PairwiseInfo {
-                    pw_did: our_peer_did.to_string(),
-                    pw_vk: PairwiseInfo::create(&wallet).await?.pw_vk, // TODO: Store whole ddo
-                },
+                our_verkey,
                 their_did_document,
             },
             output: request,
@@ -197,11 +197,13 @@ impl DidExchangeServiceRequester<RequestSent> {
         Ok(TransitionResult {
             state: Self {
                 sm,
-                our_verkey: PairwiseInfo {
-                    pw_did: their_did.to_string(),
-                    // TODO: Get it from wallet instead
-                    pw_vk: get_verkey_from_ledger(&ledger, &our_did.id().to_string()).await?,
-                },
+                // TODO: Get it from wallet instead
+                our_verkey: Key::from_base58(
+                    &get_verkey_from_ledger(&ledger, &our_did.id().to_string()).await?,
+                    KeyType::X25519,
+                )
+                .unwrap()
+                .clone(),
                 their_did_document,
             },
             output: request,

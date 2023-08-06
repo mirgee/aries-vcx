@@ -6,20 +6,26 @@ use did_doc_sov::{extra_fields::KeyKind, service::ServiceSov, DidDocumentSov};
 use did_parser::{Did, DidUrl};
 use did_peer::peer_did::generate::generate_numalgo2;
 use did_resolver_registry::ResolverRegistry;
-use messages::msg_fields::protocols::did_exchange::{complete::Complete, request::Request, response::Response};
+use messages::{
+    decorators::thread::Thread,
+    msg_fields::protocols::did_exchange::{
+        complete::Complete,
+        request::Request,
+        response::{Response, ResponseContent, ResponseDecorators},
+    },
+};
 use public_key::{Key, KeyType};
 
 use crate::{
-    errors::error::AriesVcxError,
+    errors::error::{AriesVcxError, AriesVcxErrorKind},
     protocols::{
         did_exchange::{
-            helpers::attach_to_ddo_sov,
+            helpers::{attach_to_ddo_sov, ddo_sov_to_attach},
             initiation_type::Responder,
-            protocol::responder::{DidExchangeResponder, DidExchangeResponseParams},
             record::ConnectionRecord,
             service::{did_doc_from_keys, generate_keypair},
             states::{completed::Completed, responder::response_sent::ResponseSent},
-            transition::transition_result::TransitionResult,
+            transition::{transition_error::TransitionError, transition_result::TransitionResult},
         },
         mediated_connection::pairwise_info::PairwiseInfo,
     },
@@ -74,25 +80,52 @@ impl DidExchangeServiceResponder<ResponseSent> {
         let their_ddo = resolve_their_ddo(resolver_registry, &request).await?;
         let (our_ddo, peer_did, enc_key) = create_our_did_document(wallet, service.clone()).await?;
 
-        let params = DidExchangeResponseParams {
-            request,
-            did: peer_did.clone().into(),
-            did_doc: Some(our_ddo),
-            invitation_id,
+        if request.decorators.thread.and_then(|t| t.pthid) != Some(invitation_id.clone()) {
+            return Err(AriesVcxError::from_msg(
+                AriesVcxErrorKind::InvalidState,
+                "Parent thread ID of the request does not match the id of the invite",
+            ));
+        }
+        // TODO The DDO must be signed by the pw vk in the recipient keys of the invitation
+        // (probably use a new trait for this)
+
+        let content = ResponseContent {
+            did: peer_did.to_string(),
+            did_doc: Some(ddo_sov_to_attach(our_ddo.clone())),
         };
-        let TransitionResult { state, output } = DidExchangeResponder::<ResponseSent>::construct_response(params)?;
+        let thread = {
+            let mut thread = Thread::new(request.id.clone());
+            thread.pthid = Some(invitation_id.clone());
+            thread
+        };
+        let decorators = ResponseDecorators { thread, timing: None };
+        let response = Response::with_decorators(request.id.clone(), content, decorators);
         Ok(TransitionResult {
-            state: DidExchangeService::from_parts(state, their_ddo, enc_key),
-            output,
+            state: DidExchangeService::from_parts(
+                ResponseSent {
+                    request_id: request.id,
+                    invitation_id,
+                },
+                Responder,
+                their_ddo,
+                enc_key,
+            ),
+            output: response,
         })
     }
 }
 
 impl DidExchangeServiceResponder<ResponseSent> {
     pub fn receive_complete(self, complete: Complete) -> Result<DidExchangeServiceResponder<Completed>, AriesVcxError> {
-        let state = self.sm.receive_complete(complete)?;
+        if complete.decorators.thread.thid != self.state.request_id {
+            todo!()
+        }
+        if complete.decorators.thread.pthid != Some(self.state.invitation_id.to_string()) {
+            todo!()
+        }
         Ok(DidExchangeService::from_parts(
-            state,
+            Completed,
+            Responder,
             self.their_did_document,
             self.our_verkey,
         ))

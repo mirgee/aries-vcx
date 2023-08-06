@@ -17,25 +17,10 @@ use url::Url;
 
 use crate::{errors::error::AriesVcxError, protocols::mediated_connection::pairwise_info::PairwiseInfo};
 
-use super::protocol::DidExchangeProtocol;
-
-// Should be able to:
-// * accept OOB invitation and create didexchange protocol SM, request and hold our pwdid
-// * accept request and create didexchange protocol SM, response, and hold DDO of counterparty and our pwdid
-// * accept response and transition the existing SM to complete, complete message, and hold the final DDO of counterparty and our pwdid
-// The final result should be something which would be eventually uniform for both didexchange and
-// connection protocols. I.e. this "service" can be didexchange-specific, but the final outcome
-// should be a "ConnectionRecord", which would hold all the information necessary to send messages
-// to the counterparty.
-// 1.) Should this be two separate structs (requester, responder), or should it
-// be a single struct similar to the protocol?
-// * What would be shared: thread id and state getters, and the final outcome (ConnectionRecord)
-// * The interface will be similar to that of ConnectionRecord in the intermediate states (bootstrap
-// vs. final DDO)
-// 2.) Should it be generic over the state?
 #[derive(Debug, Clone, PartialEq)]
 pub struct DidExchangeService<I, S> {
-    sm: DidExchangeProtocol<I, S>,
+    state: S,
+    initiation_type: I,
     our_verkey: Key,
     their_did_document: DidDocumentSov,
 }
@@ -51,9 +36,10 @@ impl<I, S> DidExchangeService<I, S> {
 }
 
 impl<I, S> DidExchangeService<I, S> {
-    pub fn from_parts(sm: DidExchangeProtocol<I, S>, their_did_document: DidDocumentSov, our_verkey: Key) -> Self {
+    pub fn from_parts(state: S, initiation_type: I, their_did_document: DidDocumentSov, our_verkey: Key) -> Self {
         Self {
-            sm,
+            state,
+            initiation_type,
             our_verkey,
             their_did_document,
         }

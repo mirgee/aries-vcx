@@ -1,18 +1,10 @@
-use std::{default, sync::Arc};
+use std::sync::Arc;
 
 use aries_vcx_core::{ledger::base_ledger::IndyLedgerRead, wallet::base_wallet::BaseWallet};
 use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
-use did_doc_sov::{
-    extra_fields::{didcommv1::ExtraFieldsDidCommV1, didcommv2::ExtraFieldsDidCommV2, KeyKind},
-    service::{aip1::ServiceAIP1, didcommv1::ServiceDidCommV1, didcommv2::ServiceDidCommV2, ServiceSov},
-    DidDocumentSov,
-};
-use did_key::DidKey;
+use did_doc_sov::{service::ServiceSov, DidDocumentSov};
 use did_parser::Did;
-use did_peer::{
-    peer_did::{generate::generate_numalgo2, numalgos::numalgo2::Numalgo2, peer_did::PeerDid},
-    peer_did_resolver::resolver::PeerDidResolver,
-};
+use did_peer::peer_did_resolver::resolver::PeerDidResolver;
 use did_resolver::traits::resolvable::DidResolvable;
 use messages::{
     decorators::thread::{Thread, ThreadGoalCode},
@@ -41,29 +33,18 @@ use crate::{
     errors::error::{AriesVcxError, AriesVcxErrorKind},
     handlers::util::AnyInvitation,
     protocols::did_exchange::{
-        helpers::{attach_to_ddo_sov, ddo_sov_to_attach},
-        initiation_type::Requester,
-        record::ConnectionRecord,
         states::{completed::Completed, requester::request_sent::RequestSent},
         transition::transition_result::TransitionResult,
     },
     utils::{from_legacy_did_doc_to_sov, from_legacy_service_to_service_sov},
 };
 
-use super::{construct_service, did_doc_from_keys, generate_keypair, DidExchangeService};
+use super::{attach_to_ddo_sov, create_our_did_document, ddo_sov_to_attach, DidExchangeService};
+
+#[derive(Clone, Copy, Debug)]
+pub struct Requester;
 
 pub type DidExchangeServiceRequester<S> = DidExchangeService<Requester, S>;
-
-fn map_goal_code(oob_goal_code: MaybeKnown<OobGoalCode>) -> MaybeKnown<ThreadGoalCode> {
-    match oob_goal_code {
-        MaybeKnown::Known(goal_code) => match goal_code {
-            OobGoalCode::IssueVC => MaybeKnown::Known(ThreadGoalCode::AriesVcIssue),
-            OobGoalCode::RequestProof => MaybeKnown::Known(ThreadGoalCode::AriesVcVerify),
-            OobGoalCode::CreateAccount | OobGoalCode::P2PMessaging => MaybeKnown::Known(ThreadGoalCode::AriesRelBuild),
-        },
-        MaybeKnown::Unknown(goal_code) => MaybeKnown::Unknown(goal_code),
-    }
-}
 
 pub struct PairwiseConstructRequestConfig {
     pub invitation: OobInvitation,
@@ -80,24 +61,6 @@ pub struct PublicConstructRequestConfig {
 pub enum ConstructRequestConfig {
     Pairwise(PairwiseConstructRequestConfig),
     Public(PublicConstructRequestConfig),
-}
-
-async fn create_our_did_document(
-    wallet: &Arc<dyn BaseWallet>,
-    service_endpoint: Url,
-    routing_keys: Vec<String>,
-) -> Result<(DidDocumentSov, Key), AriesVcxError> {
-    let key_ver = generate_keypair(wallet, KeyType::Ed25519).await?;
-    let key_enc = generate_keypair(wallet, KeyType::X25519).await?;
-    let service = construct_service(
-        routing_keys.into_iter().map(KeyKind::Value).collect(),
-        vec![KeyKind::DidKey(key_enc.clone().try_into().unwrap())],
-        service_endpoint,
-    )?;
-    Ok((
-        did_doc_from_keys(Default::default(), key_ver, key_enc.clone(), service),
-        key_enc,
-    ))
 }
 
 fn verify_handshake_protocol(invitation: OobInvitation) -> Result<(), AriesVcxError> {
@@ -139,6 +102,40 @@ async fn their_did_doc_from_did(
     Ok((their_did_document, sov_service))
 }
 
+fn construct_request(invitation_id: String, our_did: String, our_did_document: Option<DidDocumentSov>) -> Request {
+    let request_id = Uuid::new_v4().to_string();
+    let thread = {
+        let mut thread = Thread::new(request_id.clone());
+        thread.pthid = Some(invitation_id.clone());
+        thread
+    };
+    let decorators = {
+        let mut decorators = RequestDecorators::default();
+        decorators.thread = Some(thread);
+        decorators
+    };
+    let content = RequestContent {
+        label: "".to_string(),
+        // Must be non-empty for some reason, regardless of invite contents
+        goal: Some("To establish a connection".to_string()),
+        // Must be non-empty for some reason, regardless of invite contents
+        goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
+        did: our_did,
+        did_doc: our_did_document.map(ddo_sov_to_attach),
+    };
+    Request::with_decorators(request_id.clone(), content, decorators)
+}
+
+fn construct_complete_message(invitation_id: String, request_id: String) -> CompleteMessage {
+    let complete_id = Uuid::new_v4().to_string();
+    let decorators = {
+        let mut thread = Thread::new(request_id);
+        thread.pthid = Some(invitation_id);
+        CompleteDecorators { thread, timing: None }
+    };
+    CompleteMessage::with_decorators(complete_id, NoContent::default(), decorators)
+}
+
 impl DidExchangeServiceRequester<RequestSent> {
     async fn construct_request_pairwise(
         ledger: Arc<dyn IndyLedgerRead>,
@@ -153,42 +150,22 @@ impl DidExchangeServiceRequester<RequestSent> {
         let (our_did_document, our_verkey) = create_our_did_document(&wallet, service_endpoint, routing_keys).await?;
         let their_did_document =
             from_legacy_did_doc_to_sov(into_did_doc(&ledger, &AnyInvitation::Oob(invitation.clone())).await?)?;
-        let our_peer_did = generate_numalgo2(our_did_document.clone().into())?;
 
-        let request_id = Uuid::new_v4().to_string();
-        let invitation_id = invitation.id.clone();
-        let thread = {
-            let mut thread = Thread::new(request_id.clone());
-            thread.pthid = Some(invitation_id.clone());
-            thread
-        };
-        let decorators = {
-            let mut decorators = RequestDecorators::default();
-            decorators.thread = Some(thread);
-            decorators
-        };
-        let content = RequestContent {
-            label: "".to_string(),
-            // Must be non-empty for some reason
-            goal: Some("To establish a connection".to_string()),
-            goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
-            did: our_peer_did.to_string(),
-            did_doc: Some(ddo_sov_to_attach(our_did_document)),
-        };
-        let request = Request::with_decorators(request_id.clone(), content, decorators);
-        // TODO: If the provided DID is not resolvable, we need to add DDO (signed with a keyAgreement key?)
-        // But the request is sent encrypted!
+        let request = construct_request(
+            invitation.id.clone(),
+            our_did_document.id().to_string(),
+            Some(our_did_document.clone()),
+        );
 
         Ok(TransitionResult {
-            state: Self {
-                state: RequestSent {
-                    invitation_id,
-                    request_id,
+            state: DidExchangeServiceRequester::from_parts(
+                RequestSent {
+                    invitation_id: invitation.id.clone(),
+                    request_id: request.id.clone(),
                 },
-                initiation_type: Requester,
-                our_verkey,
                 their_did_document,
-            },
+                our_verkey,
+            ),
             output: request,
         })
     }
@@ -199,44 +176,24 @@ impl DidExchangeServiceRequester<RequestSent> {
     ) -> Result<TransitionResult<Self, Request>, AriesVcxError> {
         let (their_did_document, service) = their_did_doc_from_did(&ledger, their_did.clone()).await?;
         let invitation_id = format!("{}#{}", their_did, service.id().to_string());
-        let request_id = Uuid::new_v4().to_string();
 
-        let thread = {
-            let mut thread = Thread::new(request_id.clone());
-            thread.pthid = Some(invitation_id.clone());
-            thread
-        };
-        let decorators = {
-            let mut decorators = RequestDecorators::default();
-            decorators.thread = Some(thread);
-            decorators
-        };
-        let content = RequestContent {
-            label: "".to_string(),
-            // Must be non-empty for some reason
-            goal: Some("To establish a connection".to_string()),
-            goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
-            did: our_did.to_string(),
-            did_doc: None,
-        };
-        let request = Request::with_decorators(request_id.clone(), content, decorators);
+        let request = construct_request(invitation_id.clone(), our_did.to_string(), None);
 
         Ok(TransitionResult {
-            state: Self {
-                state: RequestSent {
-                    request_id,
+            state: DidExchangeServiceRequester::from_parts(
+                RequestSent {
+                    request_id: request.id.clone(),
                     invitation_id,
                 },
+                their_did_document,
                 // TODO: Get it from wallet instead
-                our_verkey: Key::from_base58(
+                Key::from_base58(
                     &get_verkey_from_ledger(&ledger, &our_did.id().to_string()).await?,
                     KeyType::X25519,
                 )
                 .unwrap()
                 .clone(),
-                their_did_document,
-                initiation_type: Requester,
-            },
+            ),
             output: request,
         })
     }
@@ -258,13 +215,6 @@ impl DidExchangeServiceRequester<RequestSent> {
         if response.decorators.thread.thid != self.state.request_id {
             todo!()
         }
-        let complete_id = Uuid::new_v4().to_string();
-        let decorators = {
-            let mut thread = Thread::new(self.state.request_id.to_string());
-            thread.pthid = Some(self.state.invitation_id.to_string());
-            CompleteDecorators { thread, timing: None }
-        };
-        let complete_message = CompleteMessage::with_decorators(complete_id, NoContent::default(), decorators);
         let did_document = if let Some(ddo) = response.content.did_doc {
             attach_to_ddo_sov(ddo)?
         } else {
@@ -275,20 +225,11 @@ impl DidExchangeServiceRequester<RequestSent> {
                 .to_owned()
                 .into()
         };
+        let complete_message =
+            construct_complete_message(self.state.invitation_id.clone(), self.state.request_id.clone());
         Ok(TransitionResult {
-            state: DidExchangeServiceRequester {
-                state: Completed,
-                our_verkey: self.our_verkey,
-                their_did_document: did_document,
-                initiation_type: Requester,
-            },
+            state: DidExchangeServiceRequester::from_parts(Completed, did_document, self.our_verkey),
             output: complete_message,
         })
-    }
-}
-
-impl DidExchangeServiceRequester<Completed> {
-    pub fn to_record(self) -> ConnectionRecord {
-        ConnectionRecord::from_parts(self.their_did_document, self.our_verkey)
     }
 }

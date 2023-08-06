@@ -21,7 +21,7 @@ use aries_vcx::{
                 ConstructRequestConfig, DidExchangeServiceRequester, PairwiseConstructRequestConfig,
                 PublicConstructRequestConfig,
             },
-            responder::DidExchangeServiceResponder,
+            responder::{DidExchangeServiceResponder, ReceiveRequestConfig},
         },
         states::{requester::request_sent::RequestSent, responder::response_sent::ResponseSent},
         transition::transition_result::TransitionResult,
@@ -119,21 +119,17 @@ impl ServiceDidExchange {
         // TODO: We should fetch the out of band invite associated with the request.
         // We don't want to be sending response if we don't know if there is any invitation
         // associated with the request.
-        let service = ServiceSov::DIDCommV1(ServiceDidCommV1::new(
-            Uuid::new_v4().to_string().parse()?,
-            self.service_endpoint.clone().into(),
-            Default::default(),
-        )?);
         let TransitionResult {
             state: responder,
             output: response,
-        } = DidExchangeServiceResponder::<ResponseSent>::receive_request(
-            &self.profile.inject_wallet(),
-            &self.resolver_registry.clone(),
+        } = DidExchangeServiceResponder::<ResponseSent>::receive_request(ReceiveRequestConfig {
+            wallet: self.profile.inject_wallet(),
+            resolver_registry: self.resolver_registry.clone(),
             request,
-            service,
+            service_endpoint: self.service_endpoint.clone(),
+            routing_keys: vec![],
             invitation_id,
-        )
+        })
         .await?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
@@ -145,8 +141,7 @@ impl ServiceDidExchange {
         self.did_exchange.insert(&response.id, responder.clone().into())
     }
 
-    // TODO: Should it take the thread_id from the response? Prly not
-    pub async fn send_complete(&self, thread_id: &str, response: Response) -> AgentResult<()> {
+    pub async fn send_complete(&self, thread_id: &str, response: Response) -> AgentResult<String> {
         let TransitionResult {
             state: requester,
             output: complete,
@@ -154,7 +149,6 @@ impl ServiceDidExchange {
             GenericDidExchange::Requester(RequesterState::RequestSent(s)) => s.receive_response(response).await?,
             _ => return Err(AgentError::from_kind(AgentErrorKind::InvalidState)),
         };
-        self.did_exchange.insert(thread_id, requester.clone().into())?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &complete.clone().into(),
@@ -162,20 +156,23 @@ impl ServiceDidExchange {
             requester.their_did_doc(),
         )
         .await?;
-        Ok(())
+        self.did_exchange.insert(thread_id, requester.clone().into())
     }
 
-    pub async fn receive_complete(&self, thread_id: &str, complete: Complete) -> AgentResult<()> {
+    pub async fn receive_complete(&self, thread_id: &str, complete: Complete) -> AgentResult<String> {
         let sm = match self.did_exchange.get(thread_id)? {
             GenericDidExchange::Responder(ResponderState::ResponseSent(s)) => s.receive_complete(complete)?.into(),
             _ => return Err(AgentError::from_kind(AgentErrorKind::InvalidState)),
         };
-        self.did_exchange.insert(thread_id, sm)?;
-        Ok(())
+        self.did_exchange.insert(thread_id, sm)
     }
 
     pub fn exists_by_id(&self, thread_id: &str) -> bool {
         self.did_exchange.contains_key(thread_id)
+    }
+
+    pub fn requester_did(&self) -> &str {
+        self.requester_did.as_ref()
     }
 }
 

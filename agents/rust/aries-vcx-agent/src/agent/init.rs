@@ -157,7 +157,7 @@ impl Agent {
             Arc::clone(&profile),
             did_resolver_registry.clone(),
             init_config.service_endpoint.clone(),
-            requester_did.clone(),
+            requester_did,
         ));
         let out_of_band = Arc::new(ServiceOutOfBand::new(
             Arc::clone(&profile),
@@ -190,7 +190,6 @@ impl Agent {
             holder,
             verifier,
             prover,
-            requester_did,
             config: AgentConfig {
                 config_wallet,
                 config_issuer,

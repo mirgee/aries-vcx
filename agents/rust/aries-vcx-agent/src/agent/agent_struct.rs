@@ -31,7 +31,6 @@ pub struct Agent {
     pub(super) prover: Arc<ServiceProver>,
     pub(super) out_of_band: Arc<ServiceOutOfBand>,
     pub(super) did_exchange: Arc<ServiceDidExchange>,
-    pub(super) requester_did: String,
 }
 
 impl Agent {
@@ -112,6 +111,6 @@ impl Agent {
     }
 
     pub fn requester_did(&self) -> &str {
-        self.requester_did.as_ref()
+        self.did_exchange.requester_did().as_ref()
     }
 }

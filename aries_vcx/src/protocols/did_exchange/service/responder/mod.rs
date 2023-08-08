@@ -53,6 +53,7 @@ async fn resolve_their_ddo(
     }
 }
 
+// TODO: Replace by a builder
 fn construct_response(our_did_document: DidDocumentSov, invitation_id: String, request_id: String) -> Response {
     let content = ResponseContent {
         did: our_did_document.id().to_string(),

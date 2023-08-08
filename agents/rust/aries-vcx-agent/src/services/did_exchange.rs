@@ -58,11 +58,11 @@ impl ServiceDidExchange {
 
     pub async fn send_request_public(&self, their_did: String) -> AgentResult<String> {
         let config = ConstructRequestConfig::Public(PublicConstructRequestConfig {
+            ledger: self.profile.inject_indy_ledger_read(),
             their_did: format!("did:sov:{}", their_did).parse()?,
             our_did: format!("did:sov:{}", self.requester_did).parse()?,
         });
-        let (requester, request) =
-            GenericDidExchange::construct_request(self.profile.inject_indy_ledger_read(), config).await?;
+        let (requester, request) = GenericDidExchange::construct_request(config).await?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &request.clone().into(),
@@ -76,13 +76,13 @@ impl ServiceDidExchange {
 
     pub async fn send_request_pairwise(&self, invitation: OobInvitation) -> AgentResult<String> {
         let config = ConstructRequestConfig::Pairwise(PairwiseConstructRequestConfig {
+            ledger: self.profile.inject_indy_ledger_read(),
             wallet: self.profile.inject_wallet(),
             invitation: invitation.clone(),
             service_endpoint: self.service_endpoint.clone(),
             routing_keys: vec![],
         });
-        let (requester, request) =
-            GenericDidExchange::construct_request(self.profile.inject_indy_ledger_read(), config).await?;
+        let (requester, request) = GenericDidExchange::construct_request(config).await?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &request.clone().into(),

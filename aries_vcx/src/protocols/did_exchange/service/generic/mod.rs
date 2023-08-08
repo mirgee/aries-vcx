@@ -1,6 +1,3 @@
-use std::sync::Arc;
-
-use aries_vcx_core::ledger::base_ledger::IndyLedgerRead;
 use did_doc_sov::DidDocumentSov;
 use messages::msg_fields::protocols::did_exchange::{complete::Complete, request::Request, response::Response};
 use public_key::Key;
@@ -87,12 +84,9 @@ impl GenericDidExchange {
         }
     }
 
-    pub async fn construct_request(
-        ledger: Arc<dyn IndyLedgerRead>,
-        config: ConstructRequestConfig,
-    ) -> Result<(Self, Request), AriesVcxError> {
+    pub async fn construct_request(config: ConstructRequestConfig) -> Result<(Self, Request), AriesVcxError> {
         let TransitionResult { state, output } =
-            DidExchangeServiceRequester::<RequestSent>::construct_request(ledger, config).await?;
+            DidExchangeServiceRequester::<RequestSent>::construct_request(config).await?;
         Ok((
             GenericDidExchange::Requester(RequesterState::RequestSent(state)),
             output,

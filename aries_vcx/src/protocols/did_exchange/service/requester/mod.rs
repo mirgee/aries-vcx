@@ -44,13 +44,15 @@ pub struct Requester;
 pub type DidExchangeServiceRequester<S> = DidExchangeService<Requester, S>;
 
 pub struct PairwiseConstructRequestConfig {
-    pub invitation: OobInvitation,
+    pub ledger: Arc<dyn IndyLedgerRead>,
     pub wallet: Arc<dyn BaseWallet>,
+    pub invitation: OobInvitation,
     pub service_endpoint: Url,
     pub routing_keys: Vec<String>,
 }
 
 pub struct PublicConstructRequestConfig {
+    pub ledger: Arc<dyn IndyLedgerRead>,
     pub their_did: Did,
     pub our_did: Did,
 }
@@ -99,6 +101,7 @@ async fn their_did_doc_from_did(
     Ok((their_did_document, sov_service))
 }
 
+// TODO: Replace by a builder
 fn construct_request(invitation_id: String, our_did: String, our_did_document: Option<DidDocumentSov>) -> Request {
     let request_id = Uuid::new_v4().to_string();
     let thread = {
@@ -135,8 +138,8 @@ fn construct_complete_message(invitation_id: String, request_id: String) -> Comp
 
 impl DidExchangeServiceRequester<RequestSent> {
     async fn construct_request_pairwise(
-        ledger: Arc<dyn IndyLedgerRead>,
         PairwiseConstructRequestConfig {
+            ledger,
             wallet,
             service_endpoint,
             routing_keys,
@@ -168,8 +171,11 @@ impl DidExchangeServiceRequester<RequestSent> {
     }
 
     async fn construct_request_public(
-        ledger: Arc<dyn IndyLedgerRead>,
-        PublicConstructRequestConfig { their_did, our_did }: PublicConstructRequestConfig,
+        PublicConstructRequestConfig {
+            ledger,
+            their_did,
+            our_did,
+        }: PublicConstructRequestConfig,
     ) -> Result<TransitionResult<Self, Request>, AriesVcxError> {
         let (their_did_document, service) = their_did_doc_from_did(&ledger, their_did.clone()).await?;
         let invitation_id = format!("{}#{}", their_did, service.id().to_string());
@@ -196,12 +202,11 @@ impl DidExchangeServiceRequester<RequestSent> {
     }
 
     pub async fn construct_request(
-        ledger: Arc<dyn IndyLedgerRead>,
         config: ConstructRequestConfig,
     ) -> Result<TransitionResult<Self, Request>, AriesVcxError> {
         match config {
-            ConstructRequestConfig::Pairwise(config) => Self::construct_request_pairwise(ledger, config).await,
-            ConstructRequestConfig::Public(config) => Self::construct_request_public(ledger, config).await,
+            ConstructRequestConfig::Pairwise(config) => Self::construct_request_pairwise(config).await,
+            ConstructRequestConfig::Public(config) => Self::construct_request_public(config).await,
         }
     }
 
@@ -215,7 +220,7 @@ impl DidExchangeServiceRequester<RequestSent> {
                     AriesVcxErrorKind::InvalidState,
                     "Response thread ID does not match request ID",
                 ),
-                state: self.clone(),
+                state: self,
             });
         }
         let did_document = if let Some(ddo) = response.content.did_doc {

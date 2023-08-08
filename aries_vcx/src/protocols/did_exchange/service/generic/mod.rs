@@ -1,4 +1,4 @@
-mod convertors;
+mod conversions;
 mod thin_state;
 
 use did_doc_sov::DidDocumentSov;

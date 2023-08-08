@@ -2,10 +2,7 @@ use std::sync::Arc;
 
 use aries_vcx::{
     core::profile::profile::Profile,
-    did_doc_sov::{
-        service::{didcommv1::ServiceDidCommV1, ServiceSov},
-        DidDocumentSov,
-    },
+    did_doc_sov::DidDocumentSov,
     errors::error::{AriesVcxError, AriesVcxErrorKind, VcxResult},
     messages::{
         msg_fields::protocols::{
@@ -14,17 +11,10 @@ use aries_vcx::{
         },
         AriesMessage,
     },
-    protocols::did_exchange::{
-        service::{
-            generic::{GenericDidExchange, RequesterState, ResponderState},
-            requester::{
-                ConstructRequestConfig, DidExchangeServiceRequester, PairwiseConstructRequestConfig,
-                PublicConstructRequestConfig,
-            },
-            responder::{DidExchangeServiceResponder, ReceiveRequestConfig},
-        },
-        states::{requester::request_sent::RequestSent, responder::response_sent::ResponseSent},
-        transition::transition_result::TransitionResult,
+    protocols::did_exchange::service::{
+        generic::GenericDidExchange,
+        requester::{ConstructRequestConfig, PairwiseConstructRequestConfig, PublicConstructRequestConfig},
+        responder::ReceiveRequestConfig,
     },
     transport::Transport,
     utils::{encryption_envelope::EncryptionEnvelope, from_did_doc_sov_to_legacy},
@@ -37,7 +27,7 @@ use uuid::Uuid;
 use crate::{
     http_client::HttpClient,
     storage::{object_cache::ObjectCache, Storage},
-    AgentError, AgentErrorKind, AgentResult,
+    AgentResult,
 };
 
 use super::connection::ServiceEndpoint;
@@ -71,14 +61,8 @@ impl ServiceDidExchange {
             their_did: format!("did:sov:{}", their_did).parse()?,
             our_did: format!("did:sov:{}", self.requester_did).parse()?,
         });
-        let TransitionResult {
-            state: requester,
-            output: request,
-        } = DidExchangeServiceRequester::<RequestSent>::construct_request(
-            self.profile.inject_indy_ledger_read(),
-            config,
-        )
-        .await?;
+        let (requester, request) =
+            GenericDidExchange::construct_request(self.profile.inject_indy_ledger_read(), config).await?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &request.clone().into(),
@@ -97,14 +81,8 @@ impl ServiceDidExchange {
             service_endpoint: self.service_endpoint.clone(),
             routing_keys: vec![],
         });
-        let TransitionResult {
-            state: requester,
-            output: request,
-        } = DidExchangeServiceRequester::<RequestSent>::construct_request(
-            self.profile.inject_indy_ledger_read(),
-            config,
-        )
-        .await?;
+        let (requester, request) =
+            GenericDidExchange::construct_request(self.profile.inject_indy_ledger_read(), config).await?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &request.clone().into(),
@@ -119,10 +97,7 @@ impl ServiceDidExchange {
         // TODO: We should fetch the out of band invite associated with the request.
         // We don't want to be sending response if we don't know if there is any invitation
         // associated with the request.
-        let TransitionResult {
-            state: responder,
-            output: response,
-        } = DidExchangeServiceResponder::<ResponseSent>::receive_request(ReceiveRequestConfig {
+        let (responder, response) = GenericDidExchange::handle_request(ReceiveRequestConfig {
             wallet: self.profile.inject_wallet(),
             resolver_registry: self.resolver_registry.clone(),
             request,
@@ -142,13 +117,7 @@ impl ServiceDidExchange {
     }
 
     pub async fn send_complete(&self, thread_id: &str, response: Response) -> AgentResult<String> {
-        let TransitionResult {
-            state: requester,
-            output: complete,
-        } = match self.did_exchange.get(thread_id)? {
-            GenericDidExchange::Requester(RequesterState::RequestSent(s)) => s.receive_response(response).await?,
-            _ => return Err(AgentError::from_kind(AgentErrorKind::InvalidState)),
-        };
+        let (requester, complete) = self.did_exchange.get(thread_id)?.handle_response(response).await?;
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &complete.clone().into(),
@@ -160,11 +129,8 @@ impl ServiceDidExchange {
     }
 
     pub async fn receive_complete(&self, thread_id: &str, complete: Complete) -> AgentResult<String> {
-        let sm = match self.did_exchange.get(thread_id)? {
-            GenericDidExchange::Responder(ResponderState::ResponseSent(s)) => s.receive_complete(complete)?.into(),
-            _ => return Err(AgentError::from_kind(AgentErrorKind::InvalidState)),
-        };
-        self.did_exchange.insert(thread_id, sm)
+        let requester = self.did_exchange.get(thread_id)?.handle_complete(complete)?;
+        self.did_exchange.insert(thread_id, requester)
     }
 
     pub fn exists_by_id(&self, thread_id: &str) -> bool {

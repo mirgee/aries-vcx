@@ -4,6 +4,7 @@ use aries_vcx::{
     did_doc::error::DidDocumentBuilderError,
     did_doc_sov::error::DidDocumentSovError,
     errors::error::{AriesVcxError, AriesVcxErrorKind},
+    protocols::did_exchange::service::generic::GenericDidExchange,
 };
 use aries_vcx_core::errors::error::AriesVcxCoreError;
 
@@ -74,6 +75,14 @@ impl From<did_key::error::DidKeyError> for AgentError {
     fn from(err: did_key::error::DidKeyError) -> Self {
         let kind = AgentErrorKind::GenericAriesVcxError;
         let message = format!("DidKeyError; err: {:?}", err.to_string());
+        AgentError { message, kind }
+    }
+}
+
+impl From<(GenericDidExchange, AriesVcxError)> for AgentError {
+    fn from(err: (GenericDidExchange, AriesVcxError)) -> Self {
+        let kind = AgentErrorKind::GenericAriesVcxError;
+        let message = format!("GenericDidExchange; err: {:?}", err.1.to_string());
         AgentError { message, kind }
     }
 }

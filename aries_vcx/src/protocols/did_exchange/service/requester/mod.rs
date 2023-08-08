@@ -3,9 +3,9 @@ use std::sync::Arc;
 use aries_vcx_core::{ledger::base_ledger::IndyLedgerRead, wallet::base_wallet::BaseWallet};
 use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
 use did_doc_sov::{service::ServiceSov, DidDocumentSov};
-use did_parser::Did;
+use did_parser::{Did, ParseError};
 use did_peer::peer_did_resolver::resolver::PeerDidResolver;
-use did_resolver::traits::resolvable::DidResolvable;
+use did_resolver::{error::GenericError, traits::resolvable::DidResolvable};
 use messages::{
     decorators::thread::{Thread, ThreadGoalCode},
     msg_fields::protocols::{
@@ -14,10 +14,7 @@ use messages::{
             request::{Request, RequestContent, RequestDecorators},
             response::Response,
         },
-        out_of_band::{
-            invitation::{Invitation as OobInvitation, OobService},
-            OobGoalCode,
-        },
+        out_of_band::invitation::{Invitation as OobInvitation, OobService},
     },
 };
 use public_key::{Key, KeyType};
@@ -34,7 +31,7 @@ use crate::{
     handlers::util::AnyInvitation,
     protocols::did_exchange::{
         states::{completed::Completed, requester::request_sent::RequestSent},
-        transition::transition_result::TransitionResult,
+        transition::{transition_error::TransitionError, transition_result::TransitionResult},
     },
     utils::{from_legacy_did_doc_to_sov, from_legacy_service_to_service_sov},
 };
@@ -211,16 +208,39 @@ impl DidExchangeServiceRequester<RequestSent> {
     pub async fn receive_response(
         self,
         response: Response,
-    ) -> Result<TransitionResult<DidExchangeServiceRequester<Completed>, CompleteMessage>, AriesVcxError> {
+    ) -> Result<TransitionResult<DidExchangeServiceRequester<Completed>, CompleteMessage>, TransitionError<Self>> {
         if response.decorators.thread.thid != self.state.request_id {
-            todo!()
+            return Err(TransitionError {
+                error: AriesVcxError::from_msg(
+                    AriesVcxErrorKind::InvalidState,
+                    "Response thread ID does not match request ID",
+                ),
+                state: self.clone(),
+            });
         }
         let did_document = if let Some(ddo) = response.content.did_doc {
-            attach_to_ddo_sov(ddo)?
+            attach_to_ddo_sov(ddo).map_err(|error| TransitionError {
+                error,
+                state: self.clone(),
+            })?
         } else {
             PeerDidResolver::new()
-                .resolve(&response.content.did.parse()?, &Default::default())
-                .await?
+                .resolve(
+                    &response
+                        .content
+                        .did
+                        .parse()
+                        .map_err(|error: ParseError| TransitionError {
+                            error: error.into(),
+                            state: self.clone(),
+                        })?,
+                    &Default::default(),
+                )
+                .await
+                .map_err(|error: GenericError| TransitionError {
+                    error: error.into(),
+                    state: self.clone(),
+                })?
                 .did_document()
                 .to_owned()
                 .into()

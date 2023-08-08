@@ -138,7 +138,7 @@ fn attach_to_ddo_sov(attachment: Attachment) -> Result<DidDocumentSov, AriesVcxE
                 )
             })?;
             if let Ok(ddo) = serde_json::from_slice::<DidDocumentSov>(&bytes) {
-                return Ok(ddo);
+                Ok(ddo)
             } else {
                 let res: AriesDidDoc = serde_json::from_slice(&bytes).map_err(|err| {
                     AriesVcxError::from_msg(

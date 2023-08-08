@@ -153,7 +153,7 @@ pub fn from_legacy_did_doc_to_sov(ddo: AriesDidDoc) -> VcxResult<DidDocumentSov>
     let vm = VerificationMethod::builder(
         did.clone().into(),
         did.clone(),
-        VerificationMethodType::Ed25519VerificationKey2018,
+        VerificationMethodType::Ed25519VerificationKey2020,
     )
     .add_public_key_base58(ddo.recipient_keys()?.first().unwrap().to_string())
     .build();

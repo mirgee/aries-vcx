@@ -17,7 +17,7 @@ use crate::{
     errors::error::{AriesVcxError, AriesVcxErrorKind},
     protocols::did_exchange::{
         states::{completed::Completed, responder::response_sent::ResponseSent},
-        transition::transition_result::TransitionResult,
+        transition::{transition_error::TransitionError, transition_result::TransitionResult},
     },
 };
 
@@ -105,12 +105,27 @@ impl DidExchangeServiceResponder<ResponseSent> {
 }
 
 impl DidExchangeServiceResponder<ResponseSent> {
-    pub fn receive_complete(self, complete: Complete) -> Result<DidExchangeServiceResponder<Completed>, AriesVcxError> {
+    pub fn receive_complete(
+        self,
+        complete: Complete,
+    ) -> Result<DidExchangeServiceResponder<Completed>, TransitionError<Self>> {
         if complete.decorators.thread.thid != self.state.request_id {
-            todo!()
+            return Err(TransitionError {
+                error: AriesVcxError::from_msg(
+                    AriesVcxErrorKind::InvalidState,
+                    "Thread ID of the complete message does not match the id of the request",
+                ),
+                state: self,
+            });
         }
         if complete.decorators.thread.pthid != Some(self.state.invitation_id.to_string()) {
-            todo!()
+            return Err(TransitionError {
+                error: AriesVcxError::from_msg(
+                    AriesVcxErrorKind::InvalidState,
+                    "Parent thread ID of the complete message does not match the id of the invite",
+                ),
+                state: self,
+            });
         }
         Ok(DidExchangeServiceResponder::from_parts(
             Completed,

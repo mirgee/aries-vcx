@@ -2,26 +2,21 @@ use std::sync::Arc;
 
 use aries_vcx::{
     core::profile::profile::Profile,
-    did_doc_sov::DidDocumentSov,
-    errors::error::{AriesVcxError, AriesVcxErrorKind, VcxResult},
-    messages::{
-        msg_fields::protocols::{
-            did_exchange::{complete::Complete, request::Request, response::Response},
-            out_of_band::invitation::Invitation as OobInvitation,
+    messages::msg_fields::protocols::{
+        did_exchange::{complete::Complete, request::Request, response::Response},
+        out_of_band::invitation::Invitation as OobInvitation,
+    },
+    protocols::{
+        connection::wrap_and_send_msg,
+        did_exchange::service::{
+            generic::{GenericDidExchange, ThinState},
+            requester::{ConstructRequestConfig, PairwiseConstructRequestConfig, PublicConstructRequestConfig},
+            responder::ReceiveRequestConfig,
         },
-        AriesMessage,
     },
-    protocols::did_exchange::service::{
-        generic::GenericDidExchange,
-        requester::{ConstructRequestConfig, PairwiseConstructRequestConfig, PublicConstructRequestConfig},
-        responder::ReceiveRequestConfig,
-    },
-    transport::Transport,
-    utils::{encryption_envelope::EncryptionEnvelope, from_did_doc_sov_to_legacy},
+    utils::from_did_doc_sov_to_legacy,
 };
-use aries_vcx_core::wallet::base_wallet::BaseWallet;
 use did_resolver_registry::ResolverRegistry;
-use public_key::Key;
 use uuid::Uuid;
 
 use crate::{
@@ -66,8 +61,9 @@ impl ServiceDidExchange {
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &request.clone().into(),
-            requester.our_verkey(),
-            requester.their_did_doc(),
+            &requester.our_verkey().base58(),
+            &from_did_doc_sov_to_legacy(requester.their_did_doc().clone())?,
+            &HttpClient,
         )
         .await?;
         self.did_exchange
@@ -86,8 +82,9 @@ impl ServiceDidExchange {
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &request.clone().into(),
-            requester.our_verkey(),
-            requester.their_did_doc(),
+            &requester.our_verkey().base58(),
+            &from_did_doc_sov_to_legacy(requester.their_did_doc().clone())?,
+            &HttpClient,
         )
         .await?;
         self.did_exchange.insert(&invitation.id, requester.clone().into())
@@ -109,8 +106,9 @@ impl ServiceDidExchange {
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &response.clone().into(),
-            responder.our_verkey(),
-            responder.their_did_doc(),
+            &responder.our_verkey().base58(),
+            &from_did_doc_sov_to_legacy(responder.their_did_doc().clone())?,
+            &HttpClient,
         )
         .await?;
         self.did_exchange.insert(&response.id, responder.clone().into())
@@ -121,8 +119,9 @@ impl ServiceDidExchange {
         wrap_and_send_msg(
             &self.profile.inject_wallet(),
             &complete.clone().into(),
-            requester.our_verkey(),
-            requester.their_did_doc(),
+            &requester.our_verkey().base58(),
+            &from_did_doc_sov_to_legacy(requester.their_did_doc().clone())?,
+            &HttpClient,
         )
         .await?;
         self.did_exchange.insert(thread_id, requester.clone().into())
@@ -140,29 +139,8 @@ impl ServiceDidExchange {
     pub fn public_did(&self) -> &str {
         self.public_did.as_ref()
     }
-}
 
-// TODO
-pub(crate) async fn wrap_and_send_msg(
-    wallet: &Arc<dyn BaseWallet>,
-    message: &AriesMessage,
-    sender_verkey: &Key,
-    did_doc: &DidDocumentSov,
-) -> VcxResult<()> {
-    let env = EncryptionEnvelope::create(
-        wallet,
-        message,
-        Some(&sender_verkey.base58()),
-        &from_did_doc_sov_to_legacy(did_doc.to_owned())?,
-    )
-    .await?;
-    let msg = env.0;
-    let service_endpoint = did_doc
-        .service()
-        .get(0)
-        .ok_or_else(|| AriesVcxError::from_msg(AriesVcxErrorKind::InvalidUrl, "No service in DID Doc"))?
-        .service_endpoint()
-        .clone();
-
-    HttpClient.send_message(msg, service_endpoint.into()).await
+    pub fn get_state(&self, thread_id: &str) -> AgentResult<ThinState> {
+        Ok(self.did_exchange.get(thread_id)?.get_state())
+    }
 }

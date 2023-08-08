@@ -1,4 +1,5 @@
 mod convertors;
+mod thin_state;
 
 use did_doc_sov::DidDocumentSov;
 use messages::msg_fields::protocols::did_exchange::{complete::Complete, request::Request, response::Response};
@@ -16,6 +17,8 @@ use super::{
     requester::{ConstructRequestConfig, DidExchangeServiceRequester},
     responder::{DidExchangeServiceResponder, ReceiveRequestConfig},
 };
+
+pub use thin_state::ThinState;
 
 #[derive(Debug, Clone)]
 pub enum GenericDidExchange {
@@ -113,6 +116,19 @@ impl GenericDidExchange {
                     }
                 }
                 ResponderState::Completed(_) => todo!("fail"),
+            },
+        }
+    }
+
+    pub fn get_state(&self) -> ThinState {
+        match self {
+            GenericDidExchange::Requester(requester_state) => match requester_state {
+                RequesterState::RequestSent(_) => ThinState::RequestSent,
+                RequesterState::Completed(_) => ThinState::Completed,
+            },
+            GenericDidExchange::Responder(responder_state) => match responder_state {
+                ResponderState::ResponseSent(_) => ThinState::RequestSent,
+                ResponderState::Completed(_) => ThinState::Completed,
             },
         }
     }

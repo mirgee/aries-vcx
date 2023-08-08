@@ -19,16 +19,20 @@ pub async fn resolve_their_ddo(
     resolver_registry: &Arc<ResolverRegistry>,
     request: &Request,
 ) -> Result<DidDocumentSov, AriesVcxError> {
-    if let Some(ddo) = request.content.did_doc.clone().map(attach_to_ddo_sov).transpose()? {
-        Ok(ddo)
-    } else {
-        Ok(resolver_registry
-            .resolve(&request.content.did.parse()?, &Default::default())
-            .await?
-            .did_document()
-            .to_owned()
-            .into())
-    }
+    Ok(request
+        .content
+        .did_doc
+        .clone()
+        .map(attach_to_ddo_sov)
+        .transpose()?
+        .unwrap_or(
+            resolver_registry
+                .resolve(&request.content.did.parse()?, &Default::default())
+                .await?
+                .did_document()
+                .to_owned()
+                .into(),
+        ))
 }
 
 // TODO: Replace by a builder

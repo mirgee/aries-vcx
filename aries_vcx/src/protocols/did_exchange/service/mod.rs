@@ -32,8 +32,6 @@ pub struct DidExchangeService<I, S> {
     their_did_document: DidDocumentSov,
 }
 
-// TODO: Enable SOME states to transition to Abandoned state
-// TODO: Add "thin state" getter
 impl<I, S> DidExchangeService<I, S> {
     pub fn our_verkey(&self) -> &Key {
         &self.our_verkey

@@ -28,7 +28,10 @@ pub fn verify_handshake_protocol(invitation: OobInvitation) -> Result<(), AriesV
     invitation
         .content
         .handshake_protocols
-        .unwrap()
+        .ok_or(AriesVcxError::from_msg(
+            AriesVcxErrorKind::InvalidState,
+            "Invitation does not contain handshake protpcols",
+        ))?
         .iter()
         .find(|protocol| match protocol {
             // TODO: Improve this check (messages are pain to work with)
@@ -53,7 +56,16 @@ pub async fn their_did_doc_from_did(
         VerificationMethodType::Ed25519VerificationKey2020,
     )
     // TODO: Make it easier to get the first key in base58 (regardless of initial kind) from ServiceSov
-    .add_public_key_base58(service.recipient_keys.first().unwrap().clone())
+    .add_public_key_base58(
+        service
+            .recipient_keys
+            .first()
+            .ok_or(AriesVcxError::from_msg(
+                AriesVcxErrorKind::InvalidState,
+                "No recipient keys found in resolved service",
+            ))?
+            .clone(),
+    )
     .build();
     let sov_service = from_legacy_service_to_service_sov(service.clone())?;
     let their_did_document = DidDocumentSov::builder(their_did.clone())

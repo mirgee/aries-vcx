@@ -1,4 +1,3 @@
-mod completed;
 mod request_sent;
 
 use super::DidExchangeService;

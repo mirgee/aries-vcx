@@ -1,4 +1,3 @@
-mod completed;
 mod response_sent;
 
 pub use response_sent::config::ReceiveRequestConfig;

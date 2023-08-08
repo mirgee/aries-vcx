@@ -1,5 +1,4 @@
 mod helpers;
-mod traits;
 
 pub mod generic;
 pub mod requester;
@@ -19,9 +18,10 @@ use std::marker::PhantomData;
 use did_doc_sov::DidDocumentSov;
 use public_key::Key;
 
-use self::traits::ThreadId;
-
-use super::{states::abandoned::Abandoned, transition::transition_result::TransitionResult};
+use super::{
+    states::{abandoned::Abandoned, traits::ThreadId},
+    transition::transition_result::TransitionResult,
+};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DidExchangeService<I, S> {
@@ -42,6 +42,12 @@ impl<I, S> DidExchangeService<I, S> {
     pub fn their_did_doc(&self) -> &DidDocumentSov {
         &self.their_did_document
     }
+}
+
+impl<I, S: ThreadId> DidExchangeService<I, S> {
+    pub fn get_thread_id(&self) -> &str {
+        self.state.thread_id()
+    }
 
     pub fn fail(
         self,
@@ -49,7 +55,7 @@ impl<I, S> DidExchangeService<I, S> {
         problem_code: Option<ProblemCode>,
     ) -> TransitionResult<DidExchangeService<I, Abandoned>, ProblemReport>
     where
-        Self: ThreadId,
+        S: ThreadId,
     {
         let problem_report = {
             let id = Uuid::new_v4().to_string();
@@ -59,7 +65,7 @@ impl<I, S> DidExchangeService<I, S> {
             };
             let decorators = ProblemReportDecorators {
                 // TODO: Set thid of the conversation
-                thread: Thread::new(self.thread_id().to_string()),
+                thread: Thread::new(self.state.thread_id().to_string()),
                 // TODO: Building a message is pain
                 localization: None,
                 timing: None,
@@ -68,7 +74,10 @@ impl<I, S> DidExchangeService<I, S> {
         };
         TransitionResult {
             state: DidExchangeService {
-                state: Abandoned { reason },
+                state: Abandoned {
+                    reason,
+                    request_id: self.state.thread_id().to_string(),
+                },
                 initiation_type: PhantomData,
                 our_verkey: self.our_verkey,
                 their_did_document: self.their_did_document,

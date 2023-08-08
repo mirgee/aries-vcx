@@ -20,7 +20,7 @@ use uuid::Uuid;
 use crate::{
     common::ledger::transactions::resolve_service,
     errors::error::{AriesVcxError, AriesVcxErrorKind},
-    protocols::did_exchange::service::ddo_sov_to_attach,
+    protocols::did_exchange::service::helpers::ddo_sov_to_attach,
     utils::from_legacy_service_to_service_sov,
 };
 
@@ -31,6 +31,7 @@ pub fn verify_handshake_protocol(invitation: OobInvitation) -> Result<(), AriesV
         .unwrap()
         .iter()
         .find(|protocol| match protocol {
+            // TODO: Improve this check (messages are pain to work with)
             MaybeKnown::Known(protocol) if protocol.to_string().contains("didexchange") => true,
             _ => false,
         })
@@ -64,7 +65,11 @@ pub async fn their_did_doc_from_did(
 }
 
 // TODO: Replace by a builder
-pub fn construct_request(invitation_id: String, our_did: String, our_did_document: Option<DidDocumentSov>) -> Request {
+pub fn construct_request(
+    invitation_id: String,
+    our_did: String,
+    our_did_document: Option<DidDocumentSov>,
+) -> Result<Request, AriesVcxError> {
     let request_id = Uuid::new_v4().to_string();
     let thread = {
         let mut thread = Thread::new(request_id.clone());
@@ -78,14 +83,15 @@ pub fn construct_request(invitation_id: String, our_did: String, our_did_documen
     };
     let content = RequestContent {
         label: "".to_string(),
-        // Must be non-empty for some reason, regardless of invite contents
+        // Interop note: Rejected if non-empty by acapy (regardless of invite contents)
         goal: Some("To establish a connection".to_string()),
-        // Must be non-empty for some reason, regardless of invite contents
+        // Interop note: Rejected if non-empty by acapy (regardless of invite contents)
         goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
+        // Interop note: Should not have to send both DID and DDO if did resolvable
         did: our_did,
-        did_doc: our_did_document.map(ddo_sov_to_attach),
+        did_doc: our_did_document.map(ddo_sov_to_attach).transpose()?,
     };
-    Request::with_decorators(request_id.clone(), content, decorators)
+    Ok(Request::with_decorators(request_id.clone(), content, decorators))
 }
 
 // TODO: Replace by a builder

@@ -1,10 +1,11 @@
+mod completed;
 mod request_sent;
 
-use super::{attach_to_ddo_sov, create_our_did_document, DidExchangeService};
+use super::DidExchangeService;
 
 pub use request_sent::config::{ConstructRequestConfig, PairwiseConstructRequestConfig, PublicConstructRequestConfig};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Requester;
 
 pub type DidExchangeServiceRequester<S> = DidExchangeService<Requester, S>;

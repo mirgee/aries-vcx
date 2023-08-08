@@ -110,7 +110,7 @@ impl Agent {
         self.prover.clone()
     }
 
-    pub fn requester_did(&self) -> &str {
-        self.did_exchange.requester_did().as_ref()
+    pub fn public_did(&self) -> &str {
+        self.did_exchange.public_did().as_ref()
     }
 }

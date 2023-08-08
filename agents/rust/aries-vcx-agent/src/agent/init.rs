@@ -8,7 +8,6 @@ use aries_vcx::{
     },
     core::profile::{profile::Profile, vdrtools_profile::VdrtoolsProfile},
     global::settings::init_issuer_config,
-    protocols::mediated_connection::pairwise_info::PairwiseInfo,
     utils::provision::provision_cloud_agent,
 };
 use aries_vcx_core::indy::{
@@ -16,10 +15,8 @@ use aries_vcx_core::indy::{
     wallet::{create_wallet_with_master_secret, open_wallet, wallet_configure_issuer, WalletConfig},
 };
 use did_peer::peer_did_resolver::resolver::PeerDidResolver;
-use did_resolver_registry::{GenericMap, GenericResolver, ResolverRegistry};
-use did_resolver_sov::{
-    did_resolver::traits::resolvable::DidResolvable, reader::ConcreteAttrReader, resolution::DidSovResolver,
-};
+use did_resolver_registry::ResolverRegistry;
+use did_resolver_sov::{reader::ConcreteAttrReader, resolution::DidSovResolver};
 use url::Url;
 
 use crate::{
@@ -103,8 +100,9 @@ impl Agent {
         let profile: Arc<dyn Profile> = Arc::new(indy_profile);
         let wallet = profile.inject_wallet();
 
-        // TODO: Rename
-        let (requester_did, _verkey) = add_new_did(
+        // TODO: This setup should be easier
+        // The default issuer did can't be used - its verkey is not in base58 - TODO: double-check
+        let (public_did, _verkey) = add_new_did(
             &wallet,
             &profile.inject_indy_ledger_write(),
             &config_issuer.institution_did,
@@ -114,9 +112,7 @@ impl Agent {
         let endpoint = EndpointDidSov::create()
             .set_service_endpoint(init_config.service_endpoint.clone())
             .set_types(Some(vec![DidSovServiceType::Endpoint]));
-        write_endpoint(&profile.inject_indy_ledger_write(), &requester_did, &endpoint)
-            .await
-            .unwrap();
+        write_endpoint(&profile.inject_indy_ledger_write(), &public_did, &endpoint).await?;
 
         let did_peer_resolver = PeerDidResolver::new();
         let did_sov_resolver =
@@ -157,7 +153,7 @@ impl Agent {
             Arc::clone(&profile),
             did_resolver_registry.clone(),
             init_config.service_endpoint.clone(),
-            requester_did,
+            public_did,
         ));
         let out_of_band = Arc::new(ServiceOutOfBand::new(
             Arc::clone(&profile),

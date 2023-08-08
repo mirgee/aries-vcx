@@ -111,13 +111,7 @@ impl EncryptionEnvelope {
             payload.len()
         );
 
-        let unpacked_msg = wallet.unpack_message(&payload).await.map_err(|err| {
-            error!("Cannot unpack message: {}", err);
-            AriesVcxError::from_msg(
-                AriesVcxErrorKind::InvalidJson,
-                format!("Cannot unpack message: {}", err),
-            )
-        })?;
+        let unpacked_msg = wallet.unpack_message(&payload).await?;
 
         let msg_value: serde_json::Value = serde_json::from_slice(unpacked_msg.as_slice()).map_err(|err| {
             AriesVcxError::from_msg(

@@ -14,6 +14,7 @@ use crate::{
     errors::error::{AriesVcxError, AriesVcxErrorKind},
     handlers::util::AnyInvitation,
     protocols::did_exchange::{
+        service::helpers::{attach_to_ddo_sov, create_our_did_document},
         states::{completed::Completed, requester::request_sent::RequestSent},
         transition::{transition_error::TransitionError, transition_result::TransitionResult},
     },
@@ -24,7 +25,7 @@ use helpers::{construct_complete_message, construct_request, their_did_doc_from_
 
 use self::config::{ConstructRequestConfig, PairwiseConstructRequestConfig, PublicConstructRequestConfig};
 
-use super::{attach_to_ddo_sov, create_our_did_document, DidExchangeServiceRequester};
+use super::DidExchangeServiceRequester;
 
 impl DidExchangeServiceRequester<RequestSent> {
     async fn construct_request_pairwise(
@@ -45,7 +46,7 @@ impl DidExchangeServiceRequester<RequestSent> {
             invitation.id.clone(),
             our_did_document.id().to_string(),
             Some(our_did_document.clone()),
-        );
+        )?;
 
         Ok(TransitionResult {
             state: DidExchangeServiceRequester::from_parts(
@@ -70,7 +71,7 @@ impl DidExchangeServiceRequester<RequestSent> {
         let (their_did_document, service) = their_did_doc_from_did(&ledger, their_did.clone()).await?;
         let invitation_id = format!("{}#{}", their_did, service.id().to_string());
 
-        let request = construct_request(invitation_id.clone(), our_did.to_string(), None);
+        let request = construct_request(invitation_id.clone(), our_did.to_string(), None)?;
 
         Ok(TransitionResult {
             state: DidExchangeServiceRequester::from_parts(
@@ -83,8 +84,7 @@ impl DidExchangeServiceRequester<RequestSent> {
                 Key::from_base58(
                     &get_verkey_from_ledger(&ledger, &our_did.id().to_string()).await?,
                     KeyType::X25519,
-                )
-                .unwrap()
+                )?
                 .clone(),
             ),
             output: request,
@@ -143,7 +143,14 @@ impl DidExchangeServiceRequester<RequestSent> {
         let complete_message =
             construct_complete_message(self.state.invitation_id.clone(), self.state.request_id.clone());
         Ok(TransitionResult {
-            state: DidExchangeServiceRequester::from_parts(Completed, did_document, self.our_verkey),
+            state: DidExchangeServiceRequester::from_parts(
+                Completed {
+                    invitation_id: self.state.invitation_id,
+                    request_id: self.state.request_id,
+                },
+                did_document,
+                self.our_verkey,
+            ),
             output: complete_message,
         })
     }

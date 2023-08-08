@@ -1,19 +1,13 @@
 use bs58;
-use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
-use did_doc_sov::extra_fields::KeyKind;
-use did_doc_sov::service::ServiceSov;
-use did_doc_sov::DidDocumentSov;
-use did_parser::Did;
 use diddoc_legacy::aries::diddoc::AriesDidDoc;
 use diddoc_legacy::aries::service::AriesService;
 use messages::msg_fields::protocols::connection::invitation::Invitation;
-use messages::msg_fields::protocols::out_of_band::invitation::{Invitation as OobInvitation, OobService};
-use public_key::Key;
+use messages::msg_fields::protocols::out_of_band::invitation::OobService;
 use std::{collections::HashMap, sync::Arc};
 
 use crate::common::ledger::service_didsov::EndpointDidSov;
 use crate::handlers::util::AnyInvitation;
-use crate::utils::{from_legacy_service_to_service_sov, from_service_sov_to_legacy};
+use crate::utils::from_service_sov_to_legacy;
 use aries_vcx_core::ledger::base_ledger::{IndyLedgerRead, IndyLedgerWrite};
 use aries_vcx_core::wallet::base_wallet::BaseWallet;
 use serde_json::Value;
@@ -132,7 +126,7 @@ pub async fn into_did_doc(indy_ledger: &Arc<dyn IndyLedgerRead>, invitation: &An
                     error!("Failed to obtain service definition from the ledger: {}", err);
                     AriesService::default()
                 });
-            let recipient_keys = normalize_keys_as_naked(service.clone().recipient_keys).unwrap_or_else(|err| {
+            let recipient_keys = normalize_keys_as_naked(service.recipient_keys).unwrap_or_else(|err| {
                 error!("Is not did valid: {}", err);
                 Vec::new()
             });

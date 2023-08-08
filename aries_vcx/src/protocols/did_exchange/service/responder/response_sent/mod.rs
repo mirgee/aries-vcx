@@ -3,7 +3,7 @@ use messages::msg_fields::protocols::did_exchange::{complete::Complete, response
 use crate::{
     errors::error::{AriesVcxError, AriesVcxErrorKind},
     protocols::did_exchange::{
-        service::create_our_did_document,
+        service::helpers::create_our_did_document,
         states::{completed::Completed, responder::response_sent::ResponseSent},
         transition::{transition_error::TransitionError, transition_result::TransitionResult},
     },
@@ -40,7 +40,7 @@ impl DidExchangeServiceResponder<ResponseSent> {
             ));
         }
 
-        let response = construct_response(our_ddo, invitation_id.clone(), request.id.clone());
+        let response = construct_response(our_ddo, invitation_id.clone(), request.id.clone())?;
 
         Ok(TransitionResult {
             state: DidExchangeServiceResponder::from_parts(
@@ -78,7 +78,10 @@ impl DidExchangeServiceResponder<ResponseSent> {
             });
         }
         Ok(DidExchangeServiceResponder::from_parts(
-            Completed,
+            Completed {
+                invitation_id: self.state.invitation_id,
+                request_id: self.state.request_id,
+            },
             self.their_did_document,
             self.our_verkey,
         ))

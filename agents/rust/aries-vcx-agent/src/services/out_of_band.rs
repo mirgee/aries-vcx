@@ -3,22 +3,21 @@ use std::sync::Arc;
 use aries_vcx::{
     core::profile::profile::Profile,
     did_doc_sov::{
-        extra_fields::{didcommv1::ExtraFieldsDidCommV1, didcommv2::ExtraFieldsDidCommV2, KeyKind},
-        service::{didcommv1::ServiceDidCommV1, didcommv2::ServiceDidCommV2, ServiceSov},
+        extra_fields::{didcommv1::ExtraFieldsDidCommV1, KeyKind},
+        service::{didcommv1::ServiceDidCommV1, ServiceSov},
     },
     handlers::out_of_band::{receiver::OutOfBandReceiver, sender::OutOfBandSender, GenericOutOfBand},
     messages::{
         msg_fields::protocols::out_of_band::invitation::{Invitation as OobInvitation, OobService},
         msg_types::{
-            out_of_band::{OutOfBandType, OutOfBandTypeV1, OutOfBandTypeV1_1},
-            protocols::did_exchange::{DidExchangeType, DidExchangeTypeV1, DidExchangeTypeV1_0},
+            protocols::did_exchange::{DidExchangeType, DidExchangeTypeV1},
             Protocol,
         },
         AriesMessage,
     },
-    protocols::mediated_connection::pairwise_info::PairwiseInfo,
+    protocols::did_exchange::service::generate_keypair,
 };
-use public_key::{Key, KeyType};
+use public_key::KeyType;
 use uuid::Uuid;
 
 use crate::{
@@ -44,8 +43,7 @@ impl ServiceOutOfBand {
     }
 
     pub async fn create_invitation(&self) -> AgentResult<AriesMessage> {
-        let pw_info = PairwiseInfo::create(&self.profile.inject_wallet()).await?;
-        let public_key = Key::new(bs58::decode(pw_info.pw_vk).into_vec().unwrap(), KeyType::Ed25519)?;
+        let public_key = generate_keypair(&self.profile.inject_wallet(), KeyType::Ed25519).await?;
         let service = {
             let service_id = Uuid::new_v4().to_string();
             ServiceSov::DIDCommV1(ServiceDidCommV1::new(

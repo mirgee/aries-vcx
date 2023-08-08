@@ -37,7 +37,7 @@ pub struct ServiceDidExchange {
     resolver_registry: Arc<ResolverRegistry>,
     service_endpoint: ServiceEndpoint,
     did_exchange: Arc<ObjectCache<GenericDidExchange>>,
-    requester_did: String,
+    public_did: String,
 }
 
 impl ServiceDidExchange {
@@ -45,14 +45,14 @@ impl ServiceDidExchange {
         profile: Arc<dyn Profile>,
         resolver_registry: Arc<ResolverRegistry>,
         service_endpoint: ServiceEndpoint,
-        requester_did: String,
+        public_did: String,
     ) -> Self {
         Self {
             profile,
             service_endpoint,
             resolver_registry,
             did_exchange: Arc::new(ObjectCache::new("did-exchange")),
-            requester_did,
+            public_did,
         }
     }
 
@@ -60,7 +60,7 @@ impl ServiceDidExchange {
         let config = ConstructRequestConfig::Public(PublicConstructRequestConfig {
             ledger: self.profile.inject_indy_ledger_read(),
             their_did: format!("did:sov:{}", their_did).parse()?,
-            our_did: format!("did:sov:{}", self.requester_did).parse()?,
+            our_did: format!("did:sov:{}", self.public_did).parse()?,
         });
         let (requester, request) = GenericDidExchange::construct_request(config).await?;
         wrap_and_send_msg(
@@ -137,11 +137,12 @@ impl ServiceDidExchange {
         self.did_exchange.contains_key(thread_id)
     }
 
-    pub fn requester_did(&self) -> &str {
-        self.requester_did.as_ref()
+    pub fn public_did(&self) -> &str {
+        self.public_did.as_ref()
     }
 }
 
+// TODO
 pub(crate) async fn wrap_and_send_msg(
     wallet: &Arc<dyn BaseWallet>,
     message: &AriesMessage,

@@ -1,3 +1,5 @@
+mod convertors;
+
 use did_doc_sov::DidDocumentSov;
 use messages::msg_fields::protocols::did_exchange::{complete::Complete, request::Request, response::Response};
 use public_key::Key;
@@ -31,30 +33,6 @@ pub enum RequesterState {
 pub enum ResponderState {
     ResponseSent(DidExchangeServiceResponder<ResponseSent>),
     Completed(DidExchangeServiceResponder<Completed>),
-}
-
-impl From<DidExchangeServiceRequester<RequestSent>> for GenericDidExchange {
-    fn from(state: DidExchangeServiceRequester<RequestSent>) -> Self {
-        Self::Requester(RequesterState::RequestSent(state))
-    }
-}
-
-impl From<DidExchangeServiceRequester<Completed>> for GenericDidExchange {
-    fn from(state: DidExchangeServiceRequester<Completed>) -> Self {
-        Self::Requester(RequesterState::Completed(state))
-    }
-}
-
-impl From<DidExchangeServiceResponder<ResponseSent>> for GenericDidExchange {
-    fn from(state: DidExchangeServiceResponder<ResponseSent>) -> Self {
-        Self::Responder(ResponderState::ResponseSent(state))
-    }
-}
-
-impl From<DidExchangeServiceResponder<Completed>> for GenericDidExchange {
-    fn from(state: DidExchangeServiceResponder<Completed>) -> Self {
-        Self::Responder(ResponderState::Completed(state))
-    }
 }
 
 impl GenericDidExchange {

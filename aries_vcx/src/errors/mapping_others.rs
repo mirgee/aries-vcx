@@ -54,6 +54,18 @@ impl From<did_resolver::error::GenericError> for AriesVcxError {
     }
 }
 
+impl From<public_key::PublicKeyError> for AriesVcxError {
+    fn from(err: public_key::PublicKeyError) -> Self {
+        AriesVcxError::from_msg(AriesVcxErrorKind::InvalidState, err.to_string())
+    }
+}
+
+impl From<did_key::error::DidKeyError> for AriesVcxError {
+    fn from(err: did_key::error::DidKeyError) -> Self {
+        AriesVcxError::from_msg(AriesVcxErrorKind::InvalidState, err.to_string())
+    }
+}
+
 // TODO
 impl From<AriesVcxCoreError> for AriesVcxError {
     fn from(err: AriesVcxCoreError) -> Self {

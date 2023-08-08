@@ -1,8 +1,10 @@
+use serde::{Deserialize, Serialize};
+
 use crate::error::PublicKeyError;
 
 use super::KeyType;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Key {
     key_type: KeyType,
     key: Vec<u8>,

@@ -12,7 +12,7 @@ use messages::{
 
 use crate::{
     errors::error::AriesVcxError,
-    protocols::did_exchange::service::{attach_to_ddo_sov, ddo_sov_to_attach},
+    protocols::did_exchange::service::helpers::{attach_to_ddo_sov, ddo_sov_to_attach},
 };
 
 pub async fn resolve_their_ddo(
@@ -32,10 +32,14 @@ pub async fn resolve_their_ddo(
 }
 
 // TODO: Replace by a builder
-pub fn construct_response(our_did_document: DidDocumentSov, invitation_id: String, request_id: String) -> Response {
+pub fn construct_response(
+    our_did_document: DidDocumentSov,
+    invitation_id: String,
+    request_id: String,
+) -> Result<Response, AriesVcxError> {
     let content = ResponseContent {
         did: our_did_document.id().to_string(),
-        did_doc: Some(ddo_sov_to_attach(our_did_document.clone())),
+        did_doc: Some(ddo_sov_to_attach(our_did_document.clone())?),
     };
     let thread = {
         let mut thread = Thread::new(request_id.clone());
@@ -43,5 +47,5 @@ pub fn construct_response(our_did_document: DidDocumentSov, invitation_id: Strin
         thread
     };
     let decorators = ResponseDecorators { thread, timing: None };
-    Response::with_decorators(request_id, content, decorators)
+    Ok(Response::with_decorators(request_id, content, decorators))
 }

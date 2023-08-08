@@ -80,13 +80,7 @@ pub async fn unpack_message(wallet_handle: WalletHandle, msg: &[u8]) -> VcxCoreR
 
     let res = Locator::instance()
         .crypto_controller
-        .unpack_msg(
-            serde_json::from_slice(msg).map_err(|err| {
-                error!("Cannot deserialize message: {}", err);
-                err
-            })?,
-            wallet_handle,
-        )
+        .unpack_msg(serde_json::from_slice(msg)?, wallet_handle)
         .await?;
 
     Ok(res)

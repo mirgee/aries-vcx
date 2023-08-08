@@ -6,7 +6,7 @@ use messages::msg_fields::protocols::did_exchange::{complete::Complete, request:
 use public_key::Key;
 
 use crate::{
-    errors::error::AriesVcxError,
+    errors::error::{AriesVcxError, AriesVcxErrorKind},
     protocols::did_exchange::{
         states::{completed::Completed, requester::request_sent::RequestSent, responder::response_sent::ResponseSent},
         transition::{transition_error::TransitionError, transition_result::TransitionResult},
@@ -96,15 +96,26 @@ impl GenericDidExchange {
                         }
                     }
                 }
-                RequesterState::Completed(_) => todo!("fail"),
+                RequesterState::Completed(completed_state) => Err((
+                    GenericDidExchange::Requester(RequesterState::Completed(completed_state)),
+                    AriesVcxError::from_msg(
+                        AriesVcxErrorKind::InvalidState,
+                        "Attempted to handle response in completed state",
+                    ),
+                )),
             },
-            GenericDidExchange::Responder(_) => todo!("fail"),
+            GenericDidExchange::Responder(responder) => Err((
+                GenericDidExchange::Responder(responder),
+                AriesVcxError::from_msg(
+                    AriesVcxErrorKind::InvalidState,
+                    "Attempted to handle response as a responder",
+                ),
+            )),
         }
     }
 
     pub fn handle_complete(self, complete: Complete) -> Result<Self, (Self, AriesVcxError)> {
         match self {
-            GenericDidExchange::Requester(_) => todo!("fail"),
             GenericDidExchange::Responder(responder_state) => match responder_state {
                 ResponderState::ResponseSent(response_sent_state) => {
                     match response_sent_state.receive_complete(complete) {
@@ -115,8 +126,21 @@ impl GenericDidExchange {
                         )),
                     }
                 }
-                ResponderState::Completed(_) => todo!("fail"),
+                ResponderState::Completed(completed_state) => Err((
+                    GenericDidExchange::Responder(ResponderState::Completed(completed_state)),
+                    AriesVcxError::from_msg(
+                        AriesVcxErrorKind::InvalidState,
+                        "Attempted to handle complete in completed state",
+                    ),
+                )),
             },
+            GenericDidExchange::Requester(requester_state) => Err((
+                GenericDidExchange::Requester(requester_state),
+                AriesVcxError::from_msg(
+                    AriesVcxErrorKind::InvalidState,
+                    "Attempted to handle complete as a requester",
+                ),
+            )),
         }
     }
 

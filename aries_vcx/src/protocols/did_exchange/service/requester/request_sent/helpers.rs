@@ -45,14 +45,14 @@ pub fn verify_handshake_protocol(invitation: OobInvitation) -> Result<(), AriesV
     Ok(())
 }
 
-pub async fn their_did_doc_from_did(
+pub async fn did_doc_from_did(
     ledger: &Arc<dyn IndyLedgerRead>,
-    their_did: Did,
+    did: Did,
 ) -> Result<(DidDocumentSov, ServiceSov), AriesVcxError> {
-    let service = resolve_service(ledger, &OobService::Did(their_did.id().to_string())).await?;
+    let service = resolve_service(ledger, &OobService::Did(did.id().to_string())).await?;
     let vm = VerificationMethod::builder(
-        their_did.clone().into(),
-        their_did.clone(),
+        did.clone().into(),
+        did.clone(),
         VerificationMethodType::Ed25519VerificationKey2020,
     )
     // TODO: Make it easier to get the first key in base58 (regardless of initial kind) from ServiceSov
@@ -68,12 +68,12 @@ pub async fn their_did_doc_from_did(
     )
     .build();
     let sov_service = from_legacy_service_to_service_sov(service.clone())?;
-    let their_did_document = DidDocumentSov::builder(their_did.clone())
+    let did_document = DidDocumentSov::builder(did.clone())
         .add_service(sov_service.clone())
-        .add_controller(their_did)
+        .add_controller(did)
         .add_verification_method(vm)
         .build();
-    Ok((their_did_document, sov_service))
+    Ok((did_document, sov_service))
 }
 
 // TODO: Replace by a builder

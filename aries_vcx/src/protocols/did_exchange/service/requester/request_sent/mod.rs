@@ -21,7 +21,7 @@ use crate::{
     utils::from_legacy_did_doc_to_sov,
 };
 
-use helpers::{construct_complete_message, construct_request, their_did_doc_from_did, verify_handshake_protocol};
+use helpers::{construct_complete_message, construct_request, did_doc_from_did, verify_handshake_protocol};
 
 use self::config::{ConstructRequestConfig, PairwiseConstructRequestConfig, PublicConstructRequestConfig};
 
@@ -68,10 +68,11 @@ impl DidExchangeServiceRequester<RequestSent> {
             our_did,
         }: PublicConstructRequestConfig,
     ) -> Result<TransitionResult<Self, Request>, AriesVcxError> {
-        let (their_did_document, service) = their_did_doc_from_did(&ledger, their_did.clone()).await?;
+        let (their_did_document, service) = did_doc_from_did(&ledger, their_did.clone()).await?;
+        let (our_did_document, _) = did_doc_from_did(&ledger, our_did.clone()).await?;
         let invitation_id = format!("{}#{}", their_did, service.id().to_string());
 
-        let request = construct_request(invitation_id.clone(), our_did.to_string(), None)?;
+        let request = construct_request(invitation_id.clone(), our_did.to_string(), Some(our_did_document))?;
 
         Ok(TransitionResult {
             state: DidExchangeServiceRequester::from_parts(

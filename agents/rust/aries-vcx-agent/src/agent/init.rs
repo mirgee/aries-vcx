@@ -111,7 +111,7 @@ impl Agent {
         .await?;
         let endpoint = EndpointDidSov::create()
             .set_service_endpoint(init_config.service_endpoint.clone())
-            .set_types(Some(vec![DidSovServiceType::Endpoint]));
+            .set_types(Some(vec![DidSovServiceType::DidCommunication]));
         write_endpoint(&profile.inject_indy_ledger_write(), &public_did, &endpoint).await?;
 
         let did_peer_resolver = PeerDidResolver::new();

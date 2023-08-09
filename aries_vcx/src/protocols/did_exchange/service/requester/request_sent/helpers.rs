@@ -94,6 +94,7 @@ pub fn construct_request(
         decorators
     };
     let content = RequestContent {
+        // TODO: Obviously, these fields should be more configurable
         label: "".to_string(),
         // Interop note: Rejected if non-empty by acapy (regardless of invite contents)
         goal: Some("To establish a connection".to_string()),

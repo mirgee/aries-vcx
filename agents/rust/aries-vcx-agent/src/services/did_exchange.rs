@@ -53,6 +53,7 @@ impl ServiceDidExchange {
 
     pub async fn send_request_public(&self, their_did: String) -> AgentResult<String> {
         let config = ConstructRequestConfig::Public(PublicConstructRequestConfig {
+            wallet: self.profile.inject_wallet(),
             ledger: self.profile.inject_indy_ledger_read(),
             their_did: format!("did:sov:{}", their_did).parse()?,
             our_did: format!("did:sov:{}", self.public_did).parse()?,
@@ -66,8 +67,8 @@ impl ServiceDidExchange {
             &HttpClient,
         )
         .await?;
-        self.did_exchange
-            .insert(&Uuid::new_v4().to_string(), requester.clone().into())
+        let request_id = request.decorators.thread.unwrap().thid;
+        self.did_exchange.insert(&request_id, requester.clone().into())
     }
 
     pub async fn send_request_pairwise(&self, invitation: OobInvitation) -> AgentResult<String> {
@@ -87,13 +88,15 @@ impl ServiceDidExchange {
             &HttpClient,
         )
         .await?;
-        self.did_exchange.insert(&invitation.id, requester.clone().into())
+        let request_id = request.decorators.thread.unwrap().thid;
+        self.did_exchange.insert(&request_id, requester.clone().into())
     }
 
     pub async fn send_response(&self, request: Request, invitation_id: String) -> AgentResult<String> {
         // TODO: We should fetch the out of band invite associated with the request.
         // We don't want to be sending response if we don't know if there is any invitation
         // associated with the request.
+        let request_id = request.clone().decorators.thread.unwrap().thid;
         let (responder, response) = GenericDidExchange::handle_request(ReceiveRequestConfig {
             wallet: self.profile.inject_wallet(),
             resolver_registry: self.resolver_registry.clone(),
@@ -111,7 +114,7 @@ impl ServiceDidExchange {
             &HttpClient,
         )
         .await?;
-        self.did_exchange.insert(&response.id, responder.clone().into())
+        self.did_exchange.insert(&request_id, responder.clone().into())
     }
 
     pub async fn send_complete(&self, thread_id: &str, response: Response) -> AgentResult<String> {

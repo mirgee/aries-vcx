@@ -15,6 +15,7 @@ pub struct PairwiseConstructRequestConfig {
 
 pub struct PublicConstructRequestConfig {
     pub ledger: Arc<dyn IndyLedgerRead>,
+    pub wallet: Arc<dyn BaseWallet>,
     pub their_did: Did,
     pub our_did: Did,
 }

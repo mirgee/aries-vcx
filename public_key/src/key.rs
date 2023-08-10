@@ -47,6 +47,8 @@ impl Key {
         bs58::encode(&self.key).into_string()
     }
 
+    // TODO: base64, ...
+
     pub fn multibase58(&self) -> String {
         multibase::encode(multibase::Base::Base58Btc, &self.key)
     }

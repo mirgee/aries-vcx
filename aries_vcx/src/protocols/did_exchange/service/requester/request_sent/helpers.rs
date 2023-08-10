@@ -3,9 +3,12 @@ use std::sync::Arc;
 use aries_vcx_core::ledger::base_ledger::IndyLedgerRead;
 use did_doc::schema::verification_method::{VerificationMethod, VerificationMethodType};
 use did_doc_sov::{service::ServiceSov, DidDocumentSov};
-use did_parser::Did;
+use did_parser::{Did, DidUrl};
 use messages::{
-    decorators::thread::{Thread, ThreadGoalCode},
+    decorators::{
+        attachment::Attachment,
+        thread::{Thread, ThreadGoalCode},
+    },
     msg_fields::protocols::{
         did_exchange::{
             complete::{Complete as CompleteMessage, CompleteDecorators},
@@ -20,7 +23,6 @@ use uuid::Uuid;
 use crate::{
     common::ledger::transactions::resolve_service,
     errors::error::{AriesVcxError, AriesVcxErrorKind},
-    protocols::did_exchange::service::helpers::ddo_sov_to_attach,
     utils::from_legacy_service_to_service_sov,
 };
 
@@ -50,23 +52,20 @@ pub async fn did_doc_from_did(
     did: Did,
 ) -> Result<(DidDocumentSov, ServiceSov), AriesVcxError> {
     let service = resolve_service(ledger, &OobService::Did(did.id().to_string())).await?;
-    let vm = VerificationMethod::builder(
-        did.clone().into(),
-        did.clone(),
-        VerificationMethodType::Ed25519VerificationKey2020,
-    )
-    // TODO: Make it easier to get the first key in base58 (regardless of initial kind) from ServiceSov
-    .add_public_key_base58(
-        service
-            .recipient_keys
-            .first()
-            .ok_or(AriesVcxError::from_msg(
-                AriesVcxErrorKind::InvalidState,
-                "No recipient keys found in resolved service",
-            ))?
-            .clone(),
-    )
-    .build();
+    let did_url: DidUrl = format!("{}#vm-0", did.to_string()).try_into()?;
+    let vm = VerificationMethod::builder(did_url, did.clone(), VerificationMethodType::Ed25519VerificationKey2020)
+        // TODO: Make it easier to get the first key in base58 (regardless of initial kind) from ServiceSov
+        .add_public_key_base58(
+            service
+                .recipient_keys
+                .first()
+                .ok_or(AriesVcxError::from_msg(
+                    AriesVcxErrorKind::InvalidState,
+                    "No recipient keys found in resolved service",
+                ))?
+                .clone(),
+        )
+        .build();
     let sov_service = from_legacy_service_to_service_sov(service.clone())?;
     let did_document = DidDocumentSov::builder(did.clone())
         .add_service(sov_service.clone())
@@ -80,7 +79,7 @@ pub async fn did_doc_from_did(
 pub fn construct_request(
     invitation_id: String,
     our_did: String,
-    our_did_document: Option<DidDocumentSov>,
+    attachment: Option<Attachment>,
 ) -> Result<Request, AriesVcxError> {
     let request_id = Uuid::new_v4().to_string();
     let thread = {
@@ -102,7 +101,7 @@ pub fn construct_request(
         goal_code: Some(MaybeKnown::Known(ThreadGoalCode::AriesRelBuild)),
         // Interop note: Should not have to send both DID and DDO if did resolvable
         did: our_did,
-        did_doc: our_did_document.map(ddo_sov_to_attach).transpose()?,
+        did_doc: attachment,
     };
     Ok(Request::with_decorators(request_id.clone(), content, decorators))
 }

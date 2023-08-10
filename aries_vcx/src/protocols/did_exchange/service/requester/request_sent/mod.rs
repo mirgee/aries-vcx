@@ -1,6 +1,7 @@
 pub mod config;
 mod helpers;
 
+use did_key::DidKey;
 use did_parser::ParseError;
 use did_peer::peer_did_resolver::resolver::PeerDidResolver;
 use did_resolver::{error::GenericError, traits::resolvable::DidResolvable};
@@ -8,13 +9,14 @@ use messages::msg_fields::protocols::did_exchange::{
     complete::Complete as CompleteMessage, request::Request, response::Response,
 };
 use public_key::{Key, KeyType};
+use uuid::Uuid;
 
 use crate::{
     common::{keys::get_verkey_from_ledger, ledger::transactions::into_did_doc},
     errors::error::{AriesVcxError, AriesVcxErrorKind},
     handlers::util::AnyInvitation,
     protocols::did_exchange::{
-        service::helpers::{attach_to_ddo_sov, create_our_did_document},
+        service::helpers::{attach_to_ddo_sov, create_our_did_document, ddo_sov_to_attach, jws_sign_attach},
         states::{completed::Completed, requester::request_sent::RequestSent},
         transition::{transition_error::TransitionError, transition_result::TransitionResult},
     },
@@ -42,10 +44,16 @@ impl DidExchangeServiceRequester<RequestSent> {
         let their_did_document =
             from_legacy_did_doc_to_sov(into_did_doc(&ledger, &AnyInvitation::Oob(invitation.clone())).await?)?;
 
+        let signed_attach = jws_sign_attach(
+            ddo_sov_to_attach(our_did_document.clone())?,
+            our_verkey.clone(),
+            &wallet,
+        )
+        .await?;
         let request = construct_request(
             invitation.id.clone(),
             our_did_document.id().to_string(),
-            Some(our_did_document.clone()),
+            Some(signed_attach),
         )?;
 
         Ok(TransitionResult {
@@ -63,6 +71,7 @@ impl DidExchangeServiceRequester<RequestSent> {
 
     async fn construct_request_public(
         PublicConstructRequestConfig {
+            wallet,
             ledger,
             their_did,
             our_did,
@@ -71,8 +80,19 @@ impl DidExchangeServiceRequester<RequestSent> {
         let (their_did_document, service) = did_doc_from_did(&ledger, their_did.clone()).await?;
         let (our_did_document, _) = did_doc_from_did(&ledger, our_did.clone()).await?;
         let invitation_id = format!("{}#{}", their_did, service.id().to_string());
+        // let invitation_id = Uuid::new_v4().to_string();
 
-        let request = construct_request(invitation_id.clone(), our_did.to_string(), Some(our_did_document))?;
+        let key = Key::new(
+            our_did_document
+                .verification_method()
+                .first()
+                .unwrap()
+                .public_key()
+                .key_decoded()?,
+            KeyType::Ed25519,
+        )?;
+        let signed_attach = jws_sign_attach(ddo_sov_to_attach(our_did_document.clone())?, key, &wallet).await?;
+        let request = construct_request(invitation_id.clone(), our_did.to_string(), Some(signed_attach))?;
 
         Ok(TransitionResult {
             state: DidExchangeServiceRequester::from_parts(

@@ -18,9 +18,12 @@ use serde::{de, Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 use service::ServiceSov;
 
+// TODO: Custom serialization logic
 #[derive(Serialize, Clone, Debug, PartialEq)]
 pub struct DidDocumentSov {
+    #[serde(flatten)]
     did_doc: DidDocument<ExtraFieldsSov>,
+    #[serde(skip)]
     services: Vec<ServiceSov>,
 }
 
@@ -107,7 +110,9 @@ impl DidDocumentSovBuilder {
     }
 
     pub fn add_service(mut self, service: ServiceSov) -> Self {
-        self.services.push(service);
+        self.services.push(service.clone());
+        // TODO: Make serialization code append service
+        self.ddo_builder = self.ddo_builder.add_service(service.try_into().unwrap());
         self
     }
 
